@@ -44,10 +44,10 @@ class RerunPdfGenerationService(
 
     private suspend fun subscribeAndCreatePDF() {
         while (applicationState.ready) {
-            kafkaConsumer.poll(Duration.ofSeconds(0)).forEach {
+            kafkaConsumer.poll(Duration.ofSeconds(1)).forEach {
                 handleReceivedSykmelding(objectMapper.readValue(it.value(), RerunKafkaMessage::class.java))
             }
-            delay(Duration.ofSeconds(10))
+            delay(Duration.ofSeconds(1))
         }
     }
 
