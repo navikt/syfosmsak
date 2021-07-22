@@ -5,6 +5,7 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.time.delay
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.createListener
@@ -42,11 +43,11 @@ class RerunPdfGenerationService(
     }
 
     private suspend fun subscribeAndCreatePDF() {
-        while (applicationState.alive) {
-            kafkaConsumer.poll(Duration.ofMillis(0)).forEach {
+        while (applicationState.ready) {
+            kafkaConsumer.poll(Duration.ofSeconds(0)).forEach {
                 handleReceivedSykmelding(objectMapper.readValue(it.value(), RerunKafkaMessage::class.java))
             }
-            delay(1)
+            delay(Duration.ofSeconds(10))
         }
     }
 

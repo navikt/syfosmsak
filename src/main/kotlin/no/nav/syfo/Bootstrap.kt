@@ -17,9 +17,9 @@ import java.time.Duration
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.application.ApplicationServer
@@ -42,6 +42,7 @@ import no.nav.syfo.sak.avro.RegisterJournal
 import no.nav.syfo.service.JournalService
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
+import no.nav.syfo.util.Unbounded
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -112,7 +113,7 @@ fun main() {
             .apply { this.setProperty(StreamsConfig.NUM_STREAM_THREADS_CONFIG, "1") }
 
     val journalService = JournalService(env.journalCreatedTopic, producer, sakClient, dokArkivClient, pdfgenClient, pdlPersonService)
-
+    applicationState.ready = true
     setupRerunDependencies(journalService, env, consumerConfig, applicationState, producerConfig)
 
     launchListeners(env, applicationState, consumerConfig, journalService, streamProperties)
@@ -156,7 +157,7 @@ fun createKafkaStream(streamProperties: Properties, env: Environment): KafkaStre
 }
 
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.Unbounded) {
             try {
                 action()
             } catch (e: TrackableException) {
@@ -175,36 +176,32 @@ fun launchListeners(
     journalService: JournalService,
     streamProperties: Properties
 ) {
-    createListener(applicationState) {
-        val kafkaStream = createKafkaStream(streamProperties, env)
+    val kafkaStream = createKafkaStream(streamProperties, env)
 
-        kafkaStream.setUncaughtExceptionHandler { _, err ->
-            log.error("Caught exception in stream: ${err.message}", err)
-            kafkaStream.close()
+    kafkaStream.setUncaughtExceptionHandler { _, err ->
+        log.error("Caught exception in stream: ${err.message}", err)
+        kafkaStream.close()
+        applicationState.ready = false
+        applicationState.alive = false
+        throw err
+    }
+
+    kafkaStream.setStateListener { newState, oldState ->
+        log.info("From state={} to state={}", oldState, newState)
+        if (newState == KafkaStreams.State.ERROR) {
+            // if the stream has died there is no reason to keep spinning
+            log.error("Closing stream because it went into error state")
+            kafkaStream.close(30, TimeUnit.SECONDS)
+            log.error("Restarter applikasjon")
             applicationState.ready = false
             applicationState.alive = false
-            throw err
         }
+    }
+    kafkaStream.start()
 
-        kafkaStream.setStateListener { newState, oldState ->
-            log.info("From state={} to state={}", oldState, newState)
-
-            if (newState == KafkaStreams.State.ERROR) {
-                // if the stream has died there is no reason to keep spinning
-                log.error("Closing stream because it went into error state")
-                kafkaStream.close(30, TimeUnit.SECONDS)
-                log.error("Restarter applikasjon")
-                applicationState.ready = false
-                applicationState.alive = false
-            }
-        }
-
-        kafkaStream.start()
-
+    createListener(applicationState) {
         val kafkaconsumer = KafkaConsumer<String, String>(consumerProperties)
         kafkaconsumer.subscribe(listOf(env.sm2013SakTopic))
-        applicationState.ready = true
-
         blockingApplicationLogic(
                 kafkaconsumer,
                 applicationState,
@@ -219,7 +216,7 @@ suspend fun blockingApplicationLogic(
     journalService: JournalService
 ) {
     while (applicationState.ready) {
-        consumer.poll(Duration.ofMillis(100)).forEach {
+        consumer.poll(Duration.ofSeconds(1)).forEach {
             log.info("Offset for topic: privat-syfo-sm2013-sak, offset: ${it.offset()}, partisjon: ${it.partition()}")
             val behandlingsUtfallReceivedSykmelding: BehandlingsUtfallReceivedSykmelding =
                     objectMapper.readValue(it.value())
@@ -234,10 +231,7 @@ suspend fun blockingApplicationLogic(
                     msgId = receivedSykmelding.msgId,
                     sykmeldingId = receivedSykmelding.sykmelding.id
             )
-
             journalService.onJournalRequest(receivedSykmelding, validationResult, loggingMeta)
         }
-
-        delay(1)
     }
 }
