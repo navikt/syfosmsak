@@ -117,6 +117,7 @@ fun main() {
 
     val journalService = JournalService(env.journalCreatedTopic, producer, sakClient, dokArkivClient, pdfgenClient, pdlPersonService)
     applicationState.ready = true
+
     setupRerunDependencies(journalService, env, consumerConfig, applicationState, producerConfig)
 
     launchListeners(env, applicationState, consumerConfig, journalService, streamProperties)
@@ -237,7 +238,7 @@ suspend fun blockingApplicationLogic(
                     msgId = receivedSykmelding.msgId,
                     sykmeldingId = receivedSykmelding.sykmelding.id
             )
-            withTimeout(Duration.ofMillis(100)) {
+            withTimeout(Duration.ofSeconds(30)) {
                 journalService.onJournalRequest(receivedSykmelding, validationResult, loggingMeta)
             }
         }
