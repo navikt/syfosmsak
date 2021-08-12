@@ -3,12 +3,18 @@ package no.nav.syfo.service
 import io.ktor.util.KtorExperimentalAPI
 import io.mockk.coEvery
 import io.mockk.mockk
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.time.delay
+import kotlinx.coroutines.withTimeout
+import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.client.DokArkivClient
 import no.nav.syfo.client.PdfgenClient
 import no.nav.syfo.client.SakClient
+import no.nav.syfo.createListener
 import no.nav.syfo.generateSykmelding
 import no.nav.syfo.model.AvsenderSystem
 import no.nav.syfo.model.JournalpostResponse
@@ -49,6 +55,26 @@ object JournalServiceTest : Spek({
     }
 
     describe("JournalService - opprettEllerFinnPDFJournalpost") {
+
+        it("test timeout") {
+            val applicationState = ApplicationState(true, true)
+            coEvery { pdfgenClient.createPdf(any()) } coAnswers {
+                delay(Duration.ofMillis(10))
+                "PDF".toByteArray(Charsets.UTF_8)
+            }
+            runBlocking {
+                val job = createListener(applicationState) {
+                    withTimeout(5) {
+                        val sykmelding = generateReceivedSykmelding(generateSykmelding(avsenderSystem = AvsenderSystem("EPJ-systemet", "1")))
+                        journalService.onJournalRequest(sykmelding, validationResult, loggingMeta)
+                    }
+                }
+                job.join()
+            }
+            applicationState.alive shouldEqual false
+            applicationState.ready shouldEqual false
+        }
+
         it("Oppretter PDF hvis sykmeldingen ikke er en papirsykmelding") {
             val sykmelding = generateReceivedSykmelding(generateSykmelding(avsenderSystem = AvsenderSystem("EPJ-systemet", "1")))
 
