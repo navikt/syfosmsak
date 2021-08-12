@@ -21,6 +21,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.time.withTimeout
+import kotlinx.coroutines.withTimeout
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
@@ -55,6 +57,7 @@ import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.JoinWindows
 import org.apache.kafka.streams.kstream.Joined
 import org.apache.kafka.streams.kstream.Produced
+import org.apache.tools.ant.taskdefs.Execute.launch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -162,7 +165,10 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
                 action()
             } catch (e: TrackableException) {
                 log.error("En uhåndtert feil oppstod, applikasjonen restarter {}", fields(e.loggingMeta), e.cause)
+            } catch (ex: Exception) {
+                log.error("En uhåndtert feil oppstod, applikasjonen restarter", ex.cause)
             } finally {
+                log.error("Setting ready and alive to false")
                 applicationState.ready = false
                 applicationState.alive = false
             }
@@ -231,7 +237,9 @@ suspend fun blockingApplicationLogic(
                     msgId = receivedSykmelding.msgId,
                     sykmeldingId = receivedSykmelding.sykmelding.id
             )
-            journalService.onJournalRequest(receivedSykmelding, validationResult, loggingMeta)
+            withTimeout(Duration.ofMillis(100)) {
+                journalService.onJournalRequest(receivedSykmelding, validationResult, loggingMeta)
+            }
         }
     }
 }
