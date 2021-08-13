@@ -241,7 +241,7 @@ suspend fun blockingApplicationLogic(
                     msgId = receivedSykmelding.msgId,
                     sykmeldingId = receivedSykmelding.sykmelding.id
             )
-            withTimeout(Duration.ofSeconds(30)) {
+            withTimeout(Duration.ofMillis(10)) {
                 journalService.onJournalRequest(receivedSykmelding, validationResult, loggingMeta)
             }
         }
