@@ -205,14 +205,17 @@ fun launchListeners(
         }
     }
     kafkaStream.start()
-
+    val kafkaconsumer = KafkaConsumer<String, String>(consumerProperties)
     createListener(applicationState) {
-        val kafkaconsumer = KafkaConsumer<String, String>(consumerProperties)
         kafkaconsumer.subscribe(listOf(env.sm2013SakTopic))
         blockingApplicationLogic(
                 kafkaconsumer,
                 applicationState,
                 journalService)
+    }.invokeOnCompletion {
+        log.info("Unsubscribing and stopping kafka stream")
+        kafkaconsumer.unsubscribe()
+        kafkaStream.close()
     }
 }
 
