@@ -49,6 +49,7 @@ class RerunPdfGenerationService(
             }
             delay(Duration.ofSeconds(1))
         }
+        kafkaConsumer.unsubscribe()
     }
 
     private suspend fun handleReceivedSykmelding(rerunKafkaMessage: RerunKafkaMessage) {
