@@ -4,10 +4,10 @@ import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockk
+import io.mockk.mockkClass
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
-import no.nav.syfo.client.OidcToken
-import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.client.AccessTokenClientV2
 import no.nav.syfo.pdl.client.PdlClient
 import no.nav.syfo.pdl.client.model.GetPersonResponse
 import no.nav.syfo.pdl.client.model.HentIdenter
@@ -24,18 +24,18 @@ import org.spekframework.spek2.style.specification.describe
 @KtorExperimentalAPI
 object PdlPersonServiceTest : Spek({
     val pdlClient = mockk<PdlClient>()
-    val stsOidcClient = mockk<StsOidcClient>()
-    val pdlService = PdlPersonService(pdlClient, stsOidcClient)
+    val accessTokenClient = mockkClass(AccessTokenClientV2::class)
+    val pdlService = PdlPersonService(pdlClient, accessTokenClient, "pdlscope")
     val loggingMeta = LoggingMeta("mottakId", "orgNr", "msgId", "sykmeldingId")
 
     beforeEachTest {
         clearAllMocks()
-        coEvery { stsOidcClient.oidcToken() } returns OidcToken("Token", "JWT", 1L)
     }
 
     describe("PdlService") {
         it("Hent person fra pdl uten fortrolig adresse") {
             coEvery { pdlClient.getPerson(any(), any()) } returns getPdlResponse()
+            coEvery { accessTokenClient.getAccessTokenV2(any()) } returns "token"
 
             runBlocking {
                 val person = pdlService.getPdlPerson("01245678901", loggingMeta)

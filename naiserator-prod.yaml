@@ -49,3 +49,5 @@ spec:
       value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.nais.adeo.no/graphql
+    - name: PDL_SCOPE
+      value: api://prod-fss.pdl.pdl-api/.default

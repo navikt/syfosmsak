@@ -22,6 +22,10 @@ data class Environment(
     val pdfgen: String = getEnvVar("PDF_GEN_URL", "http://syfopdfgen.teamsykmelding/api/v1/genpdf/syfosm/syfosm"),
     val rerunTopicName: String = getEnvVar("RERUN_TOPIC_NAME", "privat-syfo-register-rerun-tmp"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
+    val aadAccessTokenV2Url: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
+    val clientIdV2: String = getEnvVar("AZURE_APP_CLIENT_ID"),
+    val clientSecretV2: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
+    val pdlScope: String = getEnvVar("PDL_SCOPE"),
     override val truststore: String? = getEnvVar("NAV_TRUSTSTORE_PATH"),
     override val truststorePassword: String? = getEnvVar("NAV_TRUSTSTORE_PASSWORD"),
     override val cluster: String = getEnvVar("NAIS_CLUSTER_NAME")

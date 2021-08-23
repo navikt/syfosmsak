@@ -49,3 +49,5 @@ spec:
       value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.nais.preprod.local/graphql
+    - name: PDL_SCOPE
+      value: api://dev-fss.pdl.pdl-api/.default
