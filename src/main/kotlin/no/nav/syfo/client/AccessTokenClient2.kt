@@ -25,6 +25,7 @@ class AccessTokenClientV2(
     private var tokenMap = HashMap<String, AadAccessTokenMedExpiry>()
 
     suspend fun getAccessTokenV2(resource: String): String {
+        log.debug("Forsøker å hente nytt token fra Azure AD")
         val omToMinutter = Instant.now().plusSeconds(120L)
         return mutex.withLock {
             (

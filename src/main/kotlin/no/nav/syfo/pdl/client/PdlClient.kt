@@ -16,15 +16,15 @@ class PdlClient(
     private val temaHeader = "TEMA"
     private val tema = "SYM"
 
-    suspend fun getPerson(fnr: String, stsToken: String): GetPersonResponse {
+    suspend fun getPerson(fnr: String, accessToken: String): GetPersonResponse {
         val getPersonRequest = GetPersonRequest(query = graphQlQuery, variables = GetPersonVariables(ident = fnr))
-        return getGraphQLRespnse(getPersonRequest, stsToken)
+        return getGraphQLRespnse(getPersonRequest, accessToken)
     }
 
-    private suspend inline fun <reified R> getGraphQLRespnse(graphQlBody: Any, stsToken: String): R {
+    private suspend inline fun <reified R> getGraphQLRespnse(graphQlBody: Any, accessToken: String): R {
         return httpClient.post(basePath) {
             body = graphQlBody
-            header(HttpHeaders.Authorization, "Bearer $stsToken")
+            header(HttpHeaders.Authorization, "Bearer $accessToken")
             header(temaHeader, tema)
             header(HttpHeaders.ContentType, "application/json")
         }
