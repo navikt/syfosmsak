@@ -16,8 +16,10 @@ class PdlPersonService(
     private val pdlScope: String
 ) {
     suspend fun getPdlPerson(ident: String, loggingMeta: LoggingMeta): PdlPerson {
+        log.info("Slår opp ident {}", StructuredArguments.fields(loggingMeta))
         val stsToken = accessTokenClientV2.getAccessTokenV2(pdlScope)
         val pdlResponse = pdlClient.getPerson(ident, stsToken)
+        log.info("Ident hentet")
 
         if (pdlResponse.errors != null) {
             pdlResponse.errors.forEach {
