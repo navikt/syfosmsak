@@ -8,11 +8,14 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.confluent.kafka.serializers.KafkaAvroSerializer
 import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.apache.Apache
+import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
+import java.net.ProxySelector
 import java.time.Duration
 import java.util.Properties
 import java.util.concurrent.TimeUnit
@@ -27,6 +30,7 @@ import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
+import no.nav.syfo.client.AccessTokenClientV2
 import no.nav.syfo.client.DokArkivClient
 import no.nav.syfo.client.PdfgenClient
 import no.nav.syfo.client.SakClient
@@ -45,6 +49,7 @@ import no.nav.syfo.service.JournalService
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
 import no.nav.syfo.util.Unbounded
+import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -86,7 +91,7 @@ fun main() {
 
     DefaultExports.initialize()
 
-    val httpClient = HttpClient(Apache) {
+    val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(JsonFeature) {
             serializer = JacksonSerializer {
                 registerKotlinModule()
@@ -98,12 +103,25 @@ fun main() {
         expectSuccess = false
     }
 
+    val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
+        config()
+        engine {
+            customizeClient {
+                setRoutePlanner(SystemDefaultRoutePlanner(ProxySelector.getDefault()))
+            }
+        }
+    }
+
+    val httpClient = HttpClient(Apache, config)
+    val httpClientWithProxy = HttpClient(Apache, proxyConfig)
+
     val stsClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceURL)
     val sakClient = SakClient(env.opprettSakUrl, stsClient, httpClient)
     val dokArkivClient = DokArkivClient(env.dokArkivUrl, stsClient, httpClient)
     val pdfgenClient = PdfgenClient(env.pdfgen, httpClient)
 
-    val pdlPersonService = PdlFactory.getPdlService(env, stsClient, httpClient)
+    val accessTokenClientV2 = AccessTokenClientV2(env.aadAccessTokenV2Url, env.clientIdV2, env.clientSecretV2, httpClientWithProxy)
+    val pdlPersonService = PdlFactory.getPdlService(env, httpClient, accessTokenClientV2, env.pdlScope)
 
     val kafkaBaseConfig = loadBaseConfig(env, credentials).envOverrides()
     kafkaBaseConfig["auto.offset.reset"] = "none"
