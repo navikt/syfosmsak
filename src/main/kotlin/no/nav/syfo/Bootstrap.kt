@@ -164,9 +164,9 @@ fun createKafkaStream(streamProperties: Properties, env: Environment): KafkaStre
     )
 
     sm2013InputStream.filter { _, value ->
-        objectMapper.readValue<ReceivedSykmelding>(value).merknader?.any { it.type == "UNDER_BEHANDLING" } != true
+        value?.let { objectMapper.readValue<ReceivedSykmelding>(value).merknader?.any { it.type == "UNDER_BEHANDLING" } != true } ?: true
     }.join(behandlingsUtfallStream.filter { _, value ->
-        !objectMapper.readValue<ValidationResult>(value).ruleHits.any { it.ruleName == "UNDER_BEHANDLING" }
+        !(value?.let { objectMapper.readValue<ValidationResult>(value).ruleHits.any { it.ruleName == "UNDER_BEHANDLING" } } ?: false)
     }, { sm2013, behandling ->
         objectMapper.writeValueAsString(
                 BehandlingsUtfallReceivedSykmelding(
