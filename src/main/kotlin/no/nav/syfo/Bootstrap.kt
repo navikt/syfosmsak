@@ -25,7 +25,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.time.withTimeout
-import kotlinx.coroutines.withTimeout
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
@@ -62,7 +61,6 @@ import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.JoinWindows
 import org.apache.kafka.streams.kstream.Joined
 import org.apache.kafka.streams.kstream.Produced
-import org.apache.tools.ant.taskdefs.Execute.launch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -165,7 +163,11 @@ fun createKafkaStream(streamProperties: Properties, env: Environment): KafkaStre
             Serdes.String(), Serdes.String(), Serdes.String()
     )
 
-    sm2013InputStream.join(behandlingsUtfallStream, { sm2013, behandling ->
+    sm2013InputStream.filter { _, value ->
+        objectMapper.readValue<ReceivedSykmelding>(value).merknader?.any { it.type == "UNDER_BEHANDLING" } != true
+    }.join(behandlingsUtfallStream.filter { _, value ->
+        !objectMapper.readValue<ValidationResult>(value).ruleHits.any { it.ruleName == "UNDER_BEHANDLING" }
+    }, { sm2013, behandling ->
         objectMapper.writeValueAsString(
                 BehandlingsUtfallReceivedSykmelding(
                         receivedSykmelding = sm2013.toByteArray(Charsets.UTF_8),
