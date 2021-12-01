@@ -16,7 +16,7 @@ data class Environment(
     val journalCreatedTopic: String = getEnvVar("KAFKA_JOURNAL_CREATED_TOPIC", "aapen-syfo-oppgave-journalOpprettet"),
     val sm2013SakTopic: String = getEnvVar("KAFKA_SM2013_SAK_TOPIC", "privat-syfo-sm2013-sak"),
     val sm2013BehandlingsUtfallTopic: String = getEnvVar("KAFKA_SM2013_BEHANDLING_TOPIC", "privat-syfo-sm2013-behandlingsUtfall"),
-    val opprettSakUrl: String = getEnvVar("OPPRETT_SAK_URL", "http://sak.default/api/v1/saker"),
+    val opprettSakUrl: String = getEnvVar("OPPRETT_SAK_URL"),
     val dokArkivUrl: String = getEnvVar("DOK_ARKIV_URL"),
     val securityTokenServiceURL: String = getEnvVar("SECURITY_TOKEN_SERVICE_URL", "http://security-token-service.default/rest/v1/sts/token"),
     val pdfgen: String = getEnvVar("PDF_GEN_URL", "http://syfopdfgen.teamsykmelding/api/v1/genpdf/syfosm/syfosm"),
