@@ -1,6 +1,5 @@
 package no.nav.syfo.service
 
-import io.ktor.util.KtorExperimentalAPI
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.client.DokArkivClient
 import no.nav.syfo.client.PdfgenClient
@@ -19,7 +18,6 @@ import no.nav.syfo.util.wrapExceptions
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 
-@KtorExperimentalAPI
 class JournalService(
     private val journalCreatedTopic: String,
     private val producer: KafkaProducer<String, RegisterJournal>,
@@ -52,9 +50,11 @@ class JournalService(
             }
             if (skalOpprettePdf(receivedSykmelding.sykmelding.avsenderSystem)) {
                 MELDING_LAGER_I_JOARK.inc()
-                log.info("Melding lagret i Joark med journalpostId {}, {}",
+                log.info(
+                    "Melding lagret i Joark med journalpostId {}, {}",
                     registerJournal.journalpostId,
-                    fields(loggingMeta))
+                    fields(loggingMeta)
+                )
             }
         }
     }

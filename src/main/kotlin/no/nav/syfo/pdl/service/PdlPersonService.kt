@@ -1,6 +1,5 @@
 package no.nav.syfo.pdl.service
 
-import io.ktor.util.KtorExperimentalAPI
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.AccessTokenClientV2
 import no.nav.syfo.log
@@ -9,7 +8,6 @@ import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.util.LoggingMeta
 
-@KtorExperimentalAPI
 class PdlPersonService(
     private val pdlClient: PdlClient,
     private val accessTokenClientV2: AccessTokenClientV2,
@@ -40,10 +38,10 @@ class PdlPersonService(
         }
 
         return PdlPerson(
-                navn = getNavn(pdlResponse.data.hentPerson.navn[0]),
-                aktorId = pdlResponse.data.hentIdenter.identer.firstOrNull { it.gruppe == AKTORID }?.ident,
-                fnr = pdlResponse.data.hentIdenter.identer.firstOrNull { it.gruppe == FOLKEREGISTERIDENT }?.ident,
-                adressebeskyttelse = pdlResponse.data.hentPerson.adressebeskyttelse?.firstOrNull()?.gradering
+            navn = getNavn(pdlResponse.data.hentPerson.navn[0]),
+            aktorId = pdlResponse.data.hentIdenter.identer.firstOrNull { it.gruppe == AKTORID }?.ident,
+            fnr = pdlResponse.data.hentIdenter.identer.firstOrNull { it.gruppe == FOLKEREGISTERIDENT }?.ident,
+            adressebeskyttelse = pdlResponse.data.hentPerson.adressebeskyttelse?.firstOrNull()?.gradering
         )
     }
 

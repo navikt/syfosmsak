@@ -7,7 +7,6 @@ import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import io.ktor.util.KtorExperimentalAPI
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.log
 import no.nav.syfo.metrics.CASES_CREATED
@@ -15,7 +14,6 @@ import no.nav.syfo.model.OpprettSak
 import no.nav.syfo.model.SakResponse
 import no.nav.syfo.util.LoggingMeta
 
-@KtorExperimentalAPI
 class SakClient constructor(
     val url: String,
     val oidcClient: StsOidcClient,
@@ -25,31 +23,31 @@ class SakClient constructor(
         pasientAktoerId: String,
         msgId: String
     ): SakResponse =
-            httpClient.post<SakResponse>(url) {
-                contentType(ContentType.Application.Json)
-                header("X-Correlation-ID", msgId)
-                header("Authorization", "Bearer ${oidcClient.oidcToken().access_token}")
-                body = OpprettSak(
-                        tema = "SYM",
-                        applikasjon = "FS22",
-                        aktoerId = pasientAktoerId,
-                        orgnr = null,
-                        fagsakNr = null
-                )
-            }
+        httpClient.post<SakResponse>(url) {
+            contentType(ContentType.Application.Json)
+            header("X-Correlation-ID", msgId)
+            header("Authorization", "Bearer ${oidcClient.oidcToken().access_token}")
+            body = OpprettSak(
+                tema = "SYM",
+                applikasjon = "FS22",
+                aktoerId = pasientAktoerId,
+                orgnr = null,
+                fagsakNr = null
+            )
+        }
 
     private suspend fun findSak(
         pasientAktoerId: String,
         msgId: String
     ): List<SakResponse>? =
-            httpClient.get<List<SakResponse>?>(url) {
-                contentType(ContentType.Application.Json)
-                header("X-Correlation-ID", msgId)
-                header("Authorization", "Bearer ${oidcClient.oidcToken().access_token}")
-                parameter("tema", "SYM")
-                parameter("aktoerId", pasientAktoerId)
-                parameter("applikasjon", "FS22")
-            }
+        httpClient.get<List<SakResponse>?>(url) {
+            contentType(ContentType.Application.Json)
+            header("X-Correlation-ID", msgId)
+            header("Authorization", "Bearer ${oidcClient.oidcToken().access_token}")
+            parameter("tema", "SYM")
+            parameter("aktoerId", pasientAktoerId)
+            parameter("applikasjon", "FS22")
+        }
 
     suspend fun findOrCreateSak(
         pasientAktoerId: String,

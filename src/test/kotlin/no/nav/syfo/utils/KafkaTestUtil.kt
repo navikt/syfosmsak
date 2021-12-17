@@ -5,7 +5,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 val kafkaStreamsStateDir: Path = Paths.get(System.getProperty("java.io.tmpdir"))
-        .resolve("kafka-stream-integration-tests")
+    .resolve("kafka-stream-integration-tests")
 
 fun deleteDir(dir: Path) {
     if (Files.exists(dir)) {

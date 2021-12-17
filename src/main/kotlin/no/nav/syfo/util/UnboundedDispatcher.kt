@@ -1,11 +1,11 @@
 package no.nav.syfo.util
 
-import java.util.concurrent.Executors.newCachedThreadPool
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.asCoroutineDispatcher
+import java.util.concurrent.Executors.newCachedThreadPool
+import kotlin.coroutines.CoroutineContext
 
 val Dispatchers.Unbounded get() = UnboundedDispatcher.unboundedDispatcher
 
