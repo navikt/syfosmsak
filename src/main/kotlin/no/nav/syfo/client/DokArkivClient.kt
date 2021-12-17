@@ -9,9 +9,6 @@ import io.ktor.client.statement.HttpStatement
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import io.ktor.util.KtorExperimentalAPI
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.log
 import no.nav.syfo.model.AvsenderMottaker
@@ -29,8 +26,9 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.validation.validatePersonAndDNumber
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
-@KtorExperimentalAPI
 class DokArkivClient(
     private val url: String,
     private val stsClient: StsOidcClient,
@@ -41,8 +39,10 @@ class DokArkivClient(
         loggingMeta: LoggingMeta
     ): JournalpostResponse =
         try {
-            log.info("Kall til dokarkiv Nav-Callid {}, {}", journalpostRequest.eksternReferanseId,
-                    fields(loggingMeta))
+            log.info(
+                "Kall til dokarkiv Nav-Callid {}, {}", journalpostRequest.eksternReferanseId,
+                fields(loggingMeta)
+            )
             val httpResponse = httpClient.post<HttpStatement>(url) {
                 contentType(ContentType.Application.Json)
                 header("Authorization", "Bearer ${stsClient.oidcToken().access_token}")
@@ -68,54 +68,56 @@ fun createJournalpostPayload(
     pdf: ByteArray,
     validationResult: ValidationResult
 ) = JournalpostRequest(
-        avsenderMottaker = when (validatePersonAndDNumber(receivedSykmelding.sykmelding.behandler.fnr)) {
-            true -> createAvsenderMottakerValidFnr(receivedSykmelding)
-            else -> createAvsenderMottakerNotValidFnr(receivedSykmelding)
-        },
-        bruker = Bruker(
-                id = receivedSykmelding.personNrPasient,
-                idType = "FNR"
-        ),
-        dokumenter = listOf(Dokument(
-                dokumentvarianter = listOf(
-                        Dokumentvarianter(
-                                filnavn = "Sykmelding",
-                                filtype = "PDFA",
-                                variantformat = "ARKIV",
-                                fysiskDokument = pdf
-                        ),
-                        Dokumentvarianter(
-                                filnavn = "Sykmelding json",
-                                filtype = "JSON",
-                                variantformat = "ORIGINAL",
-                                fysiskDokument = objectMapper.writeValueAsBytes(receivedSykmelding.sykmelding)
-                        )
+    avsenderMottaker = when (validatePersonAndDNumber(receivedSykmelding.sykmelding.behandler.fnr)) {
+        true -> createAvsenderMottakerValidFnr(receivedSykmelding)
+        else -> createAvsenderMottakerNotValidFnr(receivedSykmelding)
+    },
+    bruker = Bruker(
+        id = receivedSykmelding.personNrPasient,
+        idType = "FNR"
+    ),
+    dokumenter = listOf(
+        Dokument(
+            dokumentvarianter = listOf(
+                Dokumentvarianter(
+                    filnavn = "Sykmelding",
+                    filtype = "PDFA",
+                    variantformat = "ARKIV",
+                    fysiskDokument = pdf
                 ),
-                tittel = createTittleJournalpost(validationResult, receivedSykmelding),
-                brevkode = "NAV 08-07.04 A"
-        )),
-        eksternReferanseId = receivedSykmelding.sykmelding.id,
-        journalfoerendeEnhet = "9999",
-        journalpostType = "INNGAAENDE",
-        kanal = "HELSENETTET",
-        sak = Sak(
-                arkivsaksnummer = caseId,
-                arkivsaksystem = "GSAK"
-        ),
-        tema = "SYM",
-        tittel = createTittleJournalpost(validationResult, receivedSykmelding)
+                Dokumentvarianter(
+                    filnavn = "Sykmelding json",
+                    filtype = "JSON",
+                    variantformat = "ORIGINAL",
+                    fysiskDokument = objectMapper.writeValueAsBytes(receivedSykmelding.sykmelding)
+                )
+            ),
+            tittel = createTittleJournalpost(validationResult, receivedSykmelding),
+            brevkode = "NAV 08-07.04 A"
+        )
+    ),
+    eksternReferanseId = receivedSykmelding.sykmelding.id,
+    journalfoerendeEnhet = "9999",
+    journalpostType = "INNGAAENDE",
+    kanal = "HELSENETTET",
+    sak = Sak(
+        arkivsaksnummer = caseId,
+        arkivsaksystem = "GSAK"
+    ),
+    tema = "SYM",
+    tittel = createTittleJournalpost(validationResult, receivedSykmelding)
 )
 
 fun createAvsenderMottakerValidFnr(receivedSykmelding: ReceivedSykmelding): AvsenderMottaker = AvsenderMottaker(
-        id = receivedSykmelding.sykmelding.behandler.fnr,
-        idType = "FNR",
-        land = "Norge",
-        navn = receivedSykmelding.sykmelding.behandler.formatName()
+    id = receivedSykmelding.sykmelding.behandler.fnr,
+    idType = "FNR",
+    land = "Norge",
+    navn = receivedSykmelding.sykmelding.behandler.formatName()
 )
 
 fun createAvsenderMottakerNotValidFnr(receivedSykmelding: ReceivedSykmelding): AvsenderMottaker = AvsenderMottaker(
-        land = "Norge",
-        navn = receivedSykmelding.sykmelding.behandler.formatName()
+    land = "Norge",
+    navn = receivedSykmelding.sykmelding.behandler.formatName()
 )
 
 fun createTittleJournalpost(validationResult: ValidationResult, receivedSykmelding: ReceivedSykmelding): String {
@@ -129,21 +131,21 @@ fun createTittleJournalpost(validationResult: ValidationResult, receivedSykmeldi
 }
 
 private fun getFomTomTekst(receivedSykmelding: ReceivedSykmelding) =
-        "${formaterDato(receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeFOMDate().first().fom)} -" +
-                " ${formaterDato(receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeTOMDate().last().tom)}"
+    "${formaterDato(receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeFOMDate().first().fom)} -" +
+        " ${formaterDato(receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeTOMDate().last().tom)}"
 
 fun List<Periode>.sortedSykmeldingPeriodeFOMDate(): List<Periode> =
-        sortedBy { it.fom }
+    sortedBy { it.fom }
 
 fun List<Periode>.sortedSykmeldingPeriodeTOMDate(): List<Periode> =
-        sortedBy { it.tom }
+    sortedBy { it.tom }
 
 fun Behandler.formatName(): String =
-        if (mellomnavn == null) {
-            "$etternavn $fornavn"
-        } else {
-            "$etternavn $fornavn $mellomnavn"
-        }
+    if (mellomnavn == null) {
+        "$etternavn $fornavn"
+    } else {
+        "$etternavn $fornavn $mellomnavn"
+    }
 
 fun formaterDato(dato: LocalDate): String {
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")

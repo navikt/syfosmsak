@@ -1,9 +1,5 @@
 package no.nav.syfo.rerun.pdf.service
 
-import io.ktor.util.KtorExperimentalAPI
-import java.time.Duration
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.time.delay
 import net.logstash.logback.argument.StructuredArguments.fields
@@ -21,10 +17,12 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
+import java.time.Duration
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 data class RerunKafkaMessage(val receivedSykmelding: ReceivedSykmelding, val validationResult: ValidationResult)
 
-@KtorExperimentalAPI
 class RerunPdfGenerationService(
     private val kafkaConsumer: KafkaConsumer<String, String>,
     private val journalService: JournalService,
@@ -53,10 +51,12 @@ class RerunPdfGenerationService(
     }
 
     private suspend fun handleReceivedSykmelding(rerunKafkaMessage: RerunKafkaMessage) {
-        val meta = LoggingMeta(rerunKafkaMessage.receivedSykmelding.navLogId,
-                rerunKafkaMessage.receivedSykmelding.legekontorOrgNr,
-                rerunKafkaMessage.receivedSykmelding.msgId,
-                rerunKafkaMessage.receivedSykmelding.sykmelding.id)
+        val meta = LoggingMeta(
+            rerunKafkaMessage.receivedSykmelding.navLogId,
+            rerunKafkaMessage.receivedSykmelding.legekontorOrgNr,
+            rerunKafkaMessage.receivedSykmelding.msgId,
+            rerunKafkaMessage.receivedSykmelding.sykmelding.id
+        )
 
         log.info("Received sykmelding from rerun-topic, {}", fields(meta))
 

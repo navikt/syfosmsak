@@ -19,20 +19,18 @@ import io.ktor.routing.post
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.ktor.util.KtorExperimentalAPI
 import io.mockk.coEvery
 import io.mockk.mockk
-import java.net.ServerSocket
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.model.JournalpostRequest
 import no.nav.syfo.model.JournalpostResponse
 import no.nav.syfo.util.LoggingMeta
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.net.ServerSocket
+import java.util.concurrent.TimeUnit
 
-@KtorExperimentalAPI
 object DokArkivClientTest : Spek({
     val stsOidcClient = mockk<StsOidcClient>()
     val httpClient = HttpClient(Apache) {
@@ -57,12 +55,18 @@ object DokArkivClientTest : Spek({
         routing {
             post("/dokarkiv") {
                 when {
-                    call.request.header("Nav-Callid") == "NY" -> call.respond(HttpStatusCode.Created, JournalpostResponse(
-                        emptyList(), "nyJpId", true, null, null
-                    ))
-                    call.request.header("Nav-Callid") == "DUPLIKAT" -> call.respond(HttpStatusCode.Conflict, JournalpostResponse(
-                        emptyList(), "eksisterendeJpId", true, null, null
-                    ))
+                    call.request.header("Nav-Callid") == "NY" -> call.respond(
+                        HttpStatusCode.Created,
+                        JournalpostResponse(
+                            emptyList(), "nyJpId", true, null, null
+                        )
+                    )
+                    call.request.header("Nav-Callid") == "DUPLIKAT" -> call.respond(
+                        HttpStatusCode.Conflict,
+                        JournalpostResponse(
+                            emptyList(), "eksisterendeJpId", true, null, null
+                        )
+                    )
                     else -> call.respond(HttpStatusCode.InternalServerError)
                 }
             }
@@ -80,19 +84,31 @@ object DokArkivClientTest : Spek({
             var jpResponse: JournalpostResponse? = null
             runBlocking {
                 coEvery { stsOidcClient.oidcToken() } returns OidcToken("Token", "JWT", 1L)
-                jpResponse = dokArkivClient.createJournalpost(JournalpostRequest(dokumenter = emptyList(), eksternReferanseId = "NY"), loggingMetadata)
+                jpResponse = dokArkivClient.createJournalpost(
+                    JournalpostRequest(
+                        dokumenter = emptyList(),
+                        eksternReferanseId = "NY"
+                    ),
+                    loggingMetadata
+                )
             }
 
-            jpResponse?.journalpostId shouldEqual "nyJpId"
+            jpResponse?.journalpostId shouldBeEqualTo "nyJpId"
         }
         it("Feiler ikke ved duplikat") {
             var jpResponse: JournalpostResponse? = null
             runBlocking {
                 coEvery { stsOidcClient.oidcToken() } returns OidcToken("Token", "JWT", 1L)
-                jpResponse = dokArkivClient.createJournalpost(JournalpostRequest(dokumenter = emptyList(), eksternReferanseId = "DUPLIKAT"), loggingMetadata)
+                jpResponse = dokArkivClient.createJournalpost(
+                    JournalpostRequest(
+                        dokumenter = emptyList(),
+                        eksternReferanseId = "DUPLIKAT"
+                    ),
+                    loggingMetadata
+                )
             }
 
-            jpResponse?.journalpostId shouldEqual "eksisterendeJpId"
+            jpResponse?.journalpostId shouldBeEqualTo "eksisterendeJpId"
         }
     }
 })

@@ -5,37 +5,28 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val confluentVersion = "5.3.1"
-val coroutinesVersion = "1.3.9"
-val jacksonVersion = "2.10.2"
-val kafkaVersion = "2.4.0"
-val kafkaEmbeddedVersion = "2.4.0"
-val kluentVersion = "1.51"
-val ktorVersion = "1.4.1"
-val logstashLogbackEncoder = "6.1"
-val logbackVersion = "1.2.3"
-val prometheusVersion = "0.6.0"
-val smCommonVersion = "1.f409e4d"
-val spekVersion = "2.0.13"
+val confluentVersion = "6.2.2"
+val coroutinesVersion = "1.5.1"
+val jacksonVersion = "2.13.0"
+val kafkaVersion = "2.8.0"
+val kluentVersion = "1.68"
+val ktorVersion = "1.6.7"
+val logstashLogbackEncoder = "7.0.1"
+val logbackVersion = "1.2.8"
+val prometheusVersion = "0.12.0"
+val smCommonVersion = "1.a92720c"
+val spekVersion = "2.0.17"
 val syfosmoppgaveSchemasVersion = "785e8a93a3b881e89862035abe539c795c1222dd"
-val junitPlatformLauncher = "1.6.0"
-val javaxActivationVersion = "1.1.1"
-val cxfVersion = "3.2.9"
-val commonsTextVersion = "1.4"
-val jaxbBasicAntVersion = "1.11.1"
-val javaxAnnotationApiVersion = "1.3.2"
-val jaxwsToolsVersion = "2.3.1"
-val jaxbRuntimeVersion = "2.4.0-b180830.0438"
-val javaxJaxwsApiVersion = "2.2.1"
-val jaxbApiVersion = "2.4.0-b180830.0359"
-val ioMockVersion = "1.10.0"
+val junitPlatformLauncher = "1.8.2"
+val ioMockVersion = "1.12.1"
+val kotlinVersion = "1.6.0"
 
 plugins {
     java
-    kotlin("jvm") version "1.3.72"
-    id("org.jmailen.kotlinter") version "2.2.0"
-    id("com.diffplug.gradle.spotless") version "3.23.0"
-    id("com.github.johnrengelman.shadow") version "5.2.0"
+    kotlin("jvm") version "1.6.0"
+    id("org.jmailen.kotlinter") version "3.6.0"
+    id("com.diffplug.spotless") version "5.16.0"
+    id("com.github.johnrengelman.shadow") version "7.0.0"
 }
 
 val githubUser: String by project
@@ -43,11 +34,7 @@ val githubPassword: String by project
 
 repositories {
     mavenCentral()
-    jcenter()
-    maven(url = "https://dl.bintray.com/kotlin/ktor")
-    maven(url = "https://dl.bintray.com/spekframework/spek-dev")
     maven(url = "https://packages.confluent.io/maven/")
-    maven(url = "https://kotlin.bintray.com/kotlinx")
     maven {
         url = uri("https://maven.pkg.github.com/navikt/syfosm-common")
         credentials {
@@ -58,14 +45,13 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
-    implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
     implementation("io.ktor:ktor-client-json:$ktorVersion")
     implementation("io.ktor:ktor-client-auth-basic:$ktorVersion")
@@ -80,33 +66,16 @@ dependencies {
     implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
     implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
     implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-networking:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-ws:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-diagnosis-codes:$smCommonVersion")
 
     implementation("no.nav.syfo.schemas:syfosmoppgave-avro:$syfosmoppgaveSchemasVersion")
 
-    implementation("org.apache.commons:commons-text:$commonsTextVersion")
-    implementation("org.apache.cxf:cxf-rt-frontend-jaxws:$cxfVersion")
-    implementation("org.apache.cxf:cxf-rt-features-logging:$cxfVersion")
-    implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
-    implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion")
-
-    implementation("javax.xml.ws:jaxws-api:$javaxJaxwsApiVersion")
-    implementation("javax.annotation:javax.annotation-api:$javaxAnnotationApiVersion")
-    implementation("javax.xml.bind:jaxb-api:$jaxbApiVersion")
-    implementation("org.glassfish.jaxb:jaxb-runtime:$jaxbRuntimeVersion")
-    implementation("javax.activation:activation:$javaxActivationVersion")
-    implementation("com.sun.xml.ws:jaxws-tools:$jaxwsToolsVersion") {
-        exclude(group = "com.sun.xml.ws", module = "policy")
-    }
-
+    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
-    testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedVersion")
     testImplementation ("io.mockk:mockk:$ioMockVersion")
 
     testImplementation("org.junit.platform:junit-platform-launcher:$junitPlatformLauncher")
@@ -142,7 +111,7 @@ tasks {
     }
 
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "13"
+        kotlinOptions.jvmTarget = "17"
     }
 
     "check" {

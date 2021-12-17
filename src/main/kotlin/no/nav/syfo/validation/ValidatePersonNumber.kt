@@ -25,8 +25,8 @@ fun validatePersonDNumberMod11(personNumber: String): Boolean {
     val checksum2Final = if (checksum2 == 0) 0 else 11 - checksum2
 
     return checksum1Final != 10 &&
-            personNumber[9] - '0' == checksum1Final &&
-            personNumber[10] - '0' == checksum2Final
+        personNumber[9] - '0' == checksum1Final &&
+        personNumber[10] - '0' == checksum2Final
 }
 
 fun validatePersonAndPersonDNumberRange(personNumber: String): Boolean {
@@ -35,10 +35,10 @@ fun validatePersonAndPersonDNumberRange(personNumber: String): Boolean {
 }
 
 fun validatePersonAndDNumber(personNumber: String): Boolean =
-        validatePersonDNumberMod11(personNumber) && validatePersonAndPersonDNumberRange(personNumber)
+    validatePersonDNumberMod11(personNumber) && validatePersonAndPersonDNumberRange(personNumber)
 
 fun validatePersonAndDNumber11Digits(personNumber: String): Boolean =
-        personNumber.length == 11
+    personNumber.length == 11
 
 fun validatePersonNumberRange(personNumberFirstAndSecoundChar: String): Boolean {
     return personNumberFirstAndSecoundChar.toInt() in 1..31
@@ -48,7 +48,7 @@ fun validatePersonDNumberRange(personNumberFirstAndSecoundChar: String): Boolean
     return personNumberFirstAndSecoundChar.toInt() in 41..71
 }
 fun extractBornDate(personIdent: String): LocalDate =
-        LocalDate.of(extractBornYear(personIdent), extractBornMonth(personIdent), extractBornDay(personIdent))
+    LocalDate.of(extractBornYear(personIdent), extractBornMonth(personIdent), extractBornDay(personIdent))
 
 fun extractBornYear(personIdent: String): Int {
     val lastTwoDigitsOfYear = extractLastTwoDigistOfyear(personIdent)

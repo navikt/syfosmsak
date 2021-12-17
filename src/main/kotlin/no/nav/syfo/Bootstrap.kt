@@ -13,12 +13,7 @@ import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
-import io.ktor.util.KtorExperimentalAPI
 import io.prometheus.client.hotspot.DefaultExports
-import java.net.ProxySelector
-import java.time.Duration
-import java.util.Properties
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -63,6 +58,10 @@ import org.apache.kafka.streams.kstream.Joined
 import org.apache.kafka.streams.kstream.Produced
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.net.ProxySelector
+import java.time.Duration
+import java.util.Properties
+import java.util.concurrent.TimeUnit
 
 data class BehandlingsUtfallReceivedSykmelding(val receivedSykmelding: ByteArray, val behandlingsUtfall: ByteArray)
 
@@ -75,14 +74,14 @@ val objectMapper: ObjectMapper = ObjectMapper().apply {
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmsak")
 
-@KtorExperimentalAPI
 fun main() {
     val env = Environment()
     val credentials = VaultCredentials()
     val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
-            env,
-            applicationState)
+        env,
+        applicationState
+    )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()
@@ -124,12 +123,13 @@ fun main() {
     val kafkaBaseConfig = loadBaseConfig(env, credentials).envOverrides()
     kafkaBaseConfig["auto.offset.reset"] = "none"
     val consumerConfig = kafkaBaseConfig.toConsumerConfig(
-            "${env.applicationName}-consumer", valueDeserializer = StringDeserializer::class)
+        "${env.applicationName}-consumer", valueDeserializer = StringDeserializer::class
+    )
     val producerConfig = kafkaBaseConfig.toProducerConfig(env.applicationName, KafkaAvroSerializer::class)
-            .apply { this.setProperty(ProducerConfig.RETRIES_CONFIG, "100") }
+        .apply { this.setProperty(ProducerConfig.RETRIES_CONFIG, "100") }
     val producer = KafkaProducer<String, RegisterJournal>(producerConfig)
     val streamProperties = kafkaBaseConfig.toStreamsConfig(env.applicationName, valueSerde = Serdes.String()::class)
-            .apply { this.setProperty(StreamsConfig.NUM_STREAM_THREADS_CONFIG, "1") }
+        .apply { this.setProperty(StreamsConfig.NUM_STREAM_THREADS_CONFIG, "1") }
 
     val journalService = JournalService(env.journalCreatedTopic, producer, sakClient, dokArkivClient, pdfgenClient, pdlPersonService)
     applicationState.ready = true
@@ -143,59 +143,63 @@ fun createKafkaStream(streamProperties: Properties, env: Environment): KafkaStre
     val streamsBuilder = StreamsBuilder()
 
     val sm2013InputStream = streamsBuilder.stream<String, String>(
-            listOf(
-                    env.sm2013AutomaticHandlingTopic,
-                    env.sm2013ManualHandlingTopic,
-                    env.sm2013InvalidHandlingTopic
-            ), Consumed.with(Serdes.String(), Serdes.String())
+        listOf(
+            env.sm2013AutomaticHandlingTopic,
+            env.sm2013ManualHandlingTopic,
+            env.sm2013InvalidHandlingTopic
+        ),
+        Consumed.with(Serdes.String(), Serdes.String())
     )
 
     val behandlingsUtfallStream = streamsBuilder.stream<String, String>(
-            listOf(
-                    env.sm2013BehandlingsUtfallTopic
-            ), Consumed.with(Serdes.String(), Serdes.String())
+        listOf(
+            env.sm2013BehandlingsUtfallTopic
+        ),
+        Consumed.with(Serdes.String(), Serdes.String())
     )
 
     val joinWindow = JoinWindows.of(TimeUnit.DAYS.toMillis(14))
-            .until(TimeUnit.DAYS.toMillis(31))
+        .until(TimeUnit.DAYS.toMillis(31))
 
     val joined = Joined.with(
-            Serdes.String(), Serdes.String(), Serdes.String()
+        Serdes.String(), Serdes.String(), Serdes.String()
     )
 
     sm2013InputStream.filter { _, value ->
         value?.let { objectMapper.readValue<ReceivedSykmelding>(value).merknader?.any { it.type == "UNDER_BEHANDLING" } != true } ?: true
-    }.join(behandlingsUtfallStream.filter { _, value ->
-        !(value?.let { objectMapper.readValue<ValidationResult>(value).ruleHits.any { it.ruleName == "UNDER_BEHANDLING" } } ?: false)
-    }, { sm2013, behandling ->
-        objectMapper.writeValueAsString(
+    }.join(
+        behandlingsUtfallStream.filter { _, value ->
+            !(value?.let { objectMapper.readValue<ValidationResult>(value).ruleHits.any { it.ruleName == "UNDER_BEHANDLING" } } ?: false)
+        },
+        { sm2013, behandling ->
+            objectMapper.writeValueAsString(
                 BehandlingsUtfallReceivedSykmelding(
-                        receivedSykmelding = sm2013.toByteArray(Charsets.UTF_8),
-                        behandlingsUtfall = behandling.toByteArray(Charsets.UTF_8)
+                    receivedSykmelding = sm2013.toByteArray(Charsets.UTF_8),
+                    behandlingsUtfall = behandling.toByteArray(Charsets.UTF_8)
                 )
-        )
-    }, joinWindow, joined)
-            .to(env.sm2013SakTopic, Produced.with(Serdes.String(), Serdes.String()))
+            )
+        }, joinWindow, joined
+    )
+        .to(env.sm2013SakTopic, Produced.with(Serdes.String(), Serdes.String()))
 
     return KafkaStreams(streamsBuilder.build(), streamProperties)
 }
 
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
-        GlobalScope.launch(Dispatchers.Unbounded) {
-            try {
-                action()
-            } catch (e: TrackableException) {
-                log.error("En uhåndtert feil oppstod, applikasjonen restarter {}", fields(e.loggingMeta), e.cause)
-            } catch (ex: Exception) {
-                log.error("En uhåndtert feil oppstod, applikasjonen restarter", ex.cause)
-            } finally {
-                log.error("Setting ready and alive to false")
-                applicationState.ready = false
-                applicationState.alive = false
-            }
+    GlobalScope.launch(Dispatchers.Unbounded) {
+        try {
+            action()
+        } catch (e: TrackableException) {
+            log.error("En uhåndtert feil oppstod, applikasjonen restarter {}", fields(e.loggingMeta), e.cause)
+        } catch (ex: Exception) {
+            log.error("En uhåndtert feil oppstod, applikasjonen restarter", ex.cause)
+        } finally {
+            log.error("Setting ready and alive to false")
+            applicationState.ready = false
+            applicationState.alive = false
         }
+    }
 
-@KtorExperimentalAPI
 fun launchListeners(
     env: Environment,
     applicationState: ApplicationState,
@@ -229,9 +233,10 @@ fun launchListeners(
     createListener(applicationState) {
         kafkaconsumer.subscribe(listOf(env.sm2013SakTopic))
         blockingApplicationLogic(
-                kafkaconsumer,
-                applicationState,
-                journalService)
+            kafkaconsumer,
+            applicationState,
+            journalService
+        )
     }.invokeOnCompletion {
         log.info("Unsubscribing and stopping kafka stream")
         kafkaconsumer.unsubscribe()
@@ -239,7 +244,6 @@ fun launchListeners(
     }
 }
 
-@KtorExperimentalAPI
 suspend fun blockingApplicationLogic(
     consumer: KafkaConsumer<String, String>,
     applicationState: ApplicationState,
@@ -249,17 +253,17 @@ suspend fun blockingApplicationLogic(
         consumer.poll(Duration.ofSeconds(1)).forEach {
             log.info("Offset for topic: privat-syfo-sm2013-sak, offset: ${it.offset()}, partisjon: ${it.partition()}")
             val behandlingsUtfallReceivedSykmelding: BehandlingsUtfallReceivedSykmelding =
-                    objectMapper.readValue(it.value())
+                objectMapper.readValue(it.value())
             val receivedSykmelding: ReceivedSykmelding =
-                    objectMapper.readValue(behandlingsUtfallReceivedSykmelding.receivedSykmelding)
+                objectMapper.readValue(behandlingsUtfallReceivedSykmelding.receivedSykmelding)
             val validationResult: ValidationResult =
-                    objectMapper.readValue(behandlingsUtfallReceivedSykmelding.behandlingsUtfall)
+                objectMapper.readValue(behandlingsUtfallReceivedSykmelding.behandlingsUtfall)
 
             val loggingMeta = LoggingMeta(
-                    mottakId = receivedSykmelding.navLogId,
-                    orgNr = receivedSykmelding.legekontorOrgNr,
-                    msgId = receivedSykmelding.msgId,
-                    sykmeldingId = receivedSykmelding.sykmelding.id
+                mottakId = receivedSykmelding.navLogId,
+                orgNr = receivedSykmelding.legekontorOrgNr,
+                msgId = receivedSykmelding.msgId,
+                sykmeldingId = receivedSykmelding.sykmelding.id
             )
             withTimeout(Duration.ofSeconds(30)) {
                 journalService.onJournalRequest(receivedSykmelding, validationResult, loggingMeta)

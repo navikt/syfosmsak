@@ -1,11 +1,9 @@
 package no.nav.syfo.pdl.service
 
-import io.ktor.util.KtorExperimentalAPI
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.mockkClass
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.client.AccessTokenClientV2
 import no.nav.syfo.pdl.client.PdlClient
@@ -17,11 +15,11 @@ import no.nav.syfo.pdl.client.model.PdlIdent
 import no.nav.syfo.pdl.client.model.ResponseData
 import no.nav.syfo.pdl.getPdlResponse
 import no.nav.syfo.util.LoggingMeta
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import kotlin.test.assertFailsWith
 
-@KtorExperimentalAPI
 object PdlPersonServiceTest : Spek({
     val pdlClient = mockk<PdlClient>()
     val accessTokenClient = mockkClass(AccessTokenClientV2::class)
@@ -39,10 +37,10 @@ object PdlPersonServiceTest : Spek({
 
             runBlocking {
                 val person = pdlService.getPdlPerson("01245678901", loggingMeta)
-                person.navn.fornavn shouldEqual "fornavn"
-                person.navn.mellomnavn shouldEqual null
-                person.navn.etternavn shouldEqual "etternavn"
-                person.aktorId shouldEqual "987654321"
+                person.navn.fornavn shouldBeEqualTo "fornavn"
+                person.navn.mellomnavn shouldBeEqualTo null
+                person.navn.etternavn shouldBeEqualTo "etternavn"
+                person.aktorId shouldBeEqualTo "987654321"
             }
         }
         it("Skal feile når person ikke finnes") {
@@ -61,7 +59,8 @@ object PdlPersonServiceTest : Spek({
                         navn = emptyList(), adressebeskyttelse = null
                     ),
                     hentIdenter = HentIdenter(emptyList())
-                ), errors = null
+                ),
+                errors = null
             )
 
             assertFailsWith<RuntimeException> {
@@ -77,7 +76,8 @@ object PdlPersonServiceTest : Spek({
                         navn = null, adressebeskyttelse = null
                     ),
                     hentIdenter = HentIdenter(listOf(PdlIdent(ident = "987654321", gruppe = "foo")))
-                ), errors = null
+                ),
+                errors = null
             )
 
             assertFailsWith<RuntimeException> {
@@ -94,7 +94,8 @@ object PdlPersonServiceTest : Spek({
                         adressebeskyttelse = null
                     ),
                     hentIdenter = HentIdenter(emptyList())
-                ), errors = null
+                ),
+                errors = null
             )
 
             assertFailsWith<RuntimeException> {

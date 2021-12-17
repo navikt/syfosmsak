@@ -1,11 +1,7 @@
 package no.nav.syfo.service
 
-import io.ktor.util.KtorExperimentalAPI
 import io.mockk.coEvery
 import io.mockk.mockk
-import java.time.Duration
-import java.time.LocalDateTime
-import java.time.ZonedDateTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.time.delay
@@ -28,12 +24,14 @@ import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sak.avro.RegisterJournal
 import no.nav.syfo.util.LoggingMeta
-import org.amshove.kluent.shouldEqual
+import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
-@KtorExperimentalAPI
 object JournalServiceTest : Spek({
     val producer = mockk<KafkaProducer<String, RegisterJournal>>(relaxed = true)
     val sakClient = mockk<SakClient>()
@@ -65,47 +63,59 @@ object JournalServiceTest : Spek({
             runBlocking {
                 val job = createListener(applicationState) {
                     withTimeout(5) {
-                        val sykmelding = generateReceivedSykmelding(generateSykmelding(avsenderSystem = AvsenderSystem("EPJ-systemet", "1")))
+                        val sykmelding = generateReceivedSykmelding(
+                            generateSykmelding(
+                                avsenderSystem = AvsenderSystem(
+                                    "EPJ-systemet",
+                                    "1"
+                                )
+                            )
+                        )
                         journalService.onJournalRequest(sykmelding, validationResult, loggingMeta)
                     }
                 }
                 job.join()
             }
-            applicationState.alive shouldEqual false
-            applicationState.ready shouldEqual false
+            applicationState.alive shouldBeEqualTo false
+            applicationState.ready shouldBeEqualTo false
         }
 
         it("Oppretter PDF hvis sykmeldingen ikke er en papirsykmelding") {
             val sykmelding = generateReceivedSykmelding(generateSykmelding(avsenderSystem = AvsenderSystem("EPJ-systemet", "1")))
 
             runBlocking {
-                val opprettetJournalpostId = journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, "1", loggingMeta)
+                val opprettetJournalpostId =
+                    journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, "1", loggingMeta)
 
-                opprettetJournalpostId shouldEqual journalpostId
+                opprettetJournalpostId shouldBeEqualTo journalpostId
             }
         }
         it("Oppretter PDF hvis sykmeldingen er en papirsykmelding og journalpostid ikke er satt som versjonsnummer") {
             val sykmelding = generateReceivedSykmelding(generateSykmelding(avsenderSystem = AvsenderSystem("Papirsykmelding", "1")))
 
             runBlocking {
-                val opprettetJournalpostId = journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, "1", loggingMeta)
+                val opprettetJournalpostId =
+                    journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, "1", loggingMeta)
 
-                opprettetJournalpostId shouldEqual journalpostId
+                opprettetJournalpostId shouldBeEqualTo journalpostId
             }
         }
         it("Oppretter ikke PDF hvis sykmeldingen er en papirsykmelding og versjonsnummer er journalpostid") {
             val sykmelding = generateReceivedSykmelding(generateSykmelding(avsenderSystem = AvsenderSystem("Papirsykmelding", journalpostIdPapirsykmelding)))
 
             runBlocking {
-                val opprettetJournalpostId = journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, "1", loggingMeta)
+                val opprettetJournalpostId =
+                    journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, "1", loggingMeta)
 
-                opprettetJournalpostId shouldEqual journalpostIdPapirsykmelding
+                opprettetJournalpostId shouldBeEqualTo journalpostIdPapirsykmelding
             }
         }
     }
 })
 
 fun generateReceivedSykmelding(sykmelding: Sykmelding): ReceivedSykmelding =
-    ReceivedSykmelding(sykmelding = sykmelding, personNrPasient = "fnr", tlfPasient = null, personNrLege = "fnrLege", navLogId = "id", msgId = "msgid",
+    ReceivedSykmelding(
+        sykmelding = sykmelding, personNrPasient = "fnr", tlfPasient = null, personNrLege = "fnrLege", navLogId = "id", msgId = "msgid",
         legekontorOrgNr = null, legekontorHerId = null, legekontorReshId = null, legekontorOrgName = "Legekontoret", mottattDato = LocalDateTime.now(), rulesetVersion = "1",
-        merknader = emptyList(), fellesformat = "", tssid = null)
+        merknader = emptyList(), fellesformat = "", tssid = null, partnerreferanse = null, legeHelsepersonellkategori = null, legeHprNr = null
+    )
