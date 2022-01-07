@@ -159,6 +159,7 @@ fun main() {
 fun startKafkaAivenStream(env: Environment, applicationState: ApplicationState) {
     val streamsBuilder = StreamsBuilder()
     val streamProperties = KafkaUtils.getAivenKafkaConfig().toStreamsConfig(env.applicationName, Serdes.String()::class, Serdes.String()::class)
+    streamProperties[StreamsConfig.APPLICATION_ID_CONFIG] = env.applicationId
     val inputStream = streamsBuilder.stream(
         listOf(
             env.okSykmeldingTopic,
