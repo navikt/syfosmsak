@@ -1,6 +1,6 @@
 package no.nav.syfo.rerun.pdf.service
 
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.time.delay
 import net.logstash.logback.argument.StructuredArguments.fields
 import no.nav.syfo.application.ApplicationState
@@ -23,6 +23,7 @@ import java.time.format.DateTimeFormatter
 
 data class RerunKafkaMessage(val receivedSykmelding: ReceivedSykmelding, val validationResult: ValidationResult)
 
+@DelicateCoroutinesApi
 class RerunPdfGenerationService(
     private val kafkaConsumer: KafkaConsumer<String, String>,
     private val journalService: JournalService,

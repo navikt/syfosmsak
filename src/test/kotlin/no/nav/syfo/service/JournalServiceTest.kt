@@ -23,6 +23,7 @@ import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.sak.avro.RegisterJournal
+import no.nav.syfo.service.onprem.JournalServiceOnPrem
 import no.nav.syfo.util.LoggingMeta
 import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -38,7 +39,7 @@ object JournalServiceTest : Spek({
     val dokArkivClient = mockk<DokArkivClient>()
     val pdfgenClient = mockk<PdfgenClient>()
     val pdlPersonService = mockk<PdlPersonService>()
-    val journalService = JournalService("topic", producer, sakClient, dokArkivClient, pdfgenClient, pdlPersonService)
+    val journalService = JournalServiceOnPrem("topic", producer, sakClient, dokArkivClient, pdfgenClient, pdlPersonService)
 
     val validationResult = ValidationResult(Status.OK, emptyList())
     val loggingMeta = LoggingMeta("", "", "", "")

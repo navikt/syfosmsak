@@ -17,6 +17,7 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.network.sockets.SocketTimeoutException
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -32,17 +33,21 @@ import no.nav.syfo.client.DokArkivClient
 import no.nav.syfo.client.PdfgenClient
 import no.nav.syfo.client.SakClient
 import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.envOverrides
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.kafka.toStreamsConfig
+import no.nav.syfo.model.JournalKafkaMessage
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.pdl.PdlFactory
-import no.nav.syfo.rerun.setupRerunDependencies
 import no.nav.syfo.sak.avro.RegisterJournal
 import no.nav.syfo.service.JournalService
+import no.nav.syfo.service.aiven.JournalServiceAiven
+import no.nav.syfo.service.onprem.JournalServiceOnPrem
+import no.nav.syfo.util.JacksonKafkaSerializer
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
 import no.nav.syfo.util.Unbounded
@@ -77,6 +82,7 @@ val objectMapper: ObjectMapper = ObjectMapper().apply {
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmsak")
 
+@DelicateCoroutinesApi
 fun main() {
     val env = Environment()
     val credentials = VaultCredentials()
@@ -141,12 +147,75 @@ fun main() {
     val streamProperties = kafkaBaseConfig.toStreamsConfig(env.applicationName, valueSerde = Serdes.String()::class)
         .apply { this.setProperty(StreamsConfig.NUM_STREAM_THREADS_CONFIG, "1") }
 
-    val journalService = JournalService(env.journalCreatedTopic, producer, sakClient, dokArkivClient, pdfgenClient, pdlPersonService)
+    val journalService = JournalServiceOnPrem(env.journalCreatedTopic, producer, sakClient, dokArkivClient, pdfgenClient, pdlPersonService)
+    val aivenProducer = KafkaProducer<String, JournalKafkaMessage>(KafkaUtils.getAivenKafkaConfig().toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class))
+    val journalAivenService = JournalServiceAiven(env.oppgaveJournalOpprettet, aivenProducer, sakClient, dokArkivClient, pdfgenClient, pdlPersonService)
     applicationState.ready = true
 
-    setupRerunDependencies(journalService, env, consumerConfig, applicationState, producerConfig)
+    startKafkaAivenStream(env, applicationState)
+    launchListeners(env, applicationState, consumerConfig, journalService, journalAivenService, streamProperties)
+}
 
-    launchListeners(env, applicationState, consumerConfig, journalService, streamProperties)
+fun startKafkaAivenStream(env: Environment, applicationState: ApplicationState) {
+    val streamsBuilder = StreamsBuilder()
+    val streamProperties = KafkaUtils.getAivenKafkaConfig().toStreamsConfig(env.applicationName, Serdes.String()::class, Serdes.String()::class)
+    val inputStream = streamsBuilder.stream(
+        listOf(
+            env.okSykmeldingTopic,
+            env.avvistSykmeldingTopic,
+            env.manuellSykmeldingTopic
+        ),
+        Consumed.with(Serdes.String(), Serdes.String())
+    ).filter { _, value ->
+        value?.let { objectMapper.readValue<ReceivedSykmelding>(value).merknader?.any { it.type == "UNDER_BEHANDLING" } != true } ?: true
+    }
+
+    val behandlingsutfallStream = streamsBuilder.stream(
+        listOf(
+            env.behandlingsUtfallTopic
+        ),
+        Consumed.with(Serdes.String(), Serdes.String())
+    ).filter { _, value ->
+        !(value?.let { objectMapper.readValue<ValidationResult>(value).ruleHits.any { it.ruleName == "UNDER_BEHANDLING" } } ?: false)
+    }
+
+    val joinWindow = JoinWindows.of(Duration.ofDays(14))
+
+    inputStream.join(
+        behandlingsutfallStream,
+        { sm2013, behandling ->
+            log.info("streamed to aiven")
+            objectMapper.writeValueAsString(
+                BehandlingsUtfallReceivedSykmelding(
+                    receivedSykmelding = sm2013.toByteArray(Charsets.UTF_8),
+                    behandlingsUtfall = behandling.toByteArray(Charsets.UTF_8)
+                )
+            )
+        },
+        joinWindow
+    ).to(env.privatSykmeldingSak)
+
+    val stream = KafkaStreams(streamsBuilder.build(), streamProperties)
+    stream.setUncaughtExceptionHandler { err ->
+        log.error("Aiven: Caught exception in stream: ${err.message}", err)
+        stream.close(Duration.ofSeconds(30))
+        applicationState.ready = false
+        applicationState.alive = false
+        throw err
+    }
+
+    stream.setStateListener { newState, oldState ->
+        log.info("Aiven: From state={} to state={}", oldState, newState)
+        if (newState == KafkaStreams.State.ERROR) {
+            // if the stream has died there is no reason to keep spinning
+            log.error("Aiven: Closing stream because it went into error state")
+            stream.close(Duration.ofSeconds(30))
+            log.error("Aiven: Restarter applikasjon")
+            applicationState.ready = false
+            applicationState.alive = false
+        }
+    }
+    stream.start()
 }
 
 fun createKafkaStream(streamProperties: Properties, env: Environment): KafkaStreams {
@@ -195,6 +264,7 @@ fun createKafkaStream(streamProperties: Properties, env: Environment): KafkaStre
     return KafkaStreams(streamsBuilder.build(), streamProperties)
 }
 
+@DelicateCoroutinesApi
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
     GlobalScope.launch(Dispatchers.Unbounded) {
         try {
@@ -210,18 +280,20 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
         }
     }
 
+@DelicateCoroutinesApi
 fun launchListeners(
     env: Environment,
     applicationState: ApplicationState,
     consumerProperties: Properties,
     journalService: JournalService,
+    journalServiceAiven: JournalService,
     streamProperties: Properties
 ) {
     val kafkaStream = createKafkaStream(streamProperties, env)
 
-    kafkaStream.setUncaughtExceptionHandler { _, err ->
+    kafkaStream.setUncaughtExceptionHandler { err ->
         log.error("Caught exception in stream: ${err.message}", err)
-        kafkaStream.close()
+        kafkaStream.close(Duration.ofSeconds(30))
         applicationState.ready = false
         applicationState.alive = false
         throw err
@@ -232,7 +304,7 @@ fun launchListeners(
         if (newState == KafkaStreams.State.ERROR) {
             // if the stream has died there is no reason to keep spinning
             log.error("Closing stream because it went into error state")
-            kafkaStream.close(30, TimeUnit.SECONDS)
+            kafkaStream.close(Duration.ofSeconds(30))
             log.error("Restarter applikasjon")
             applicationState.ready = false
             applicationState.alive = false
@@ -240,6 +312,15 @@ fun launchListeners(
     }
     kafkaStream.start()
     val kafkaconsumer = KafkaConsumer<String, String>(consumerProperties)
+    val kafkaAivenConsumer = KafkaConsumer<String, String>(KafkaUtils.getAivenKafkaConfig().toConsumerConfig("${env.applicationName}-consumer", valueDeserializer = StringDeserializer::class))
+    createListener(applicationState) {
+        kafkaAivenConsumer.subscribe(listOf(env.privatSykmeldingSak))
+        blockingApplicationLogic(
+            kafkaAivenConsumer,
+            applicationState,
+            journalServiceAiven
+        )
+    }
     createListener(applicationState) {
         kafkaconsumer.subscribe(listOf(env.sm2013SakTopic))
         blockingApplicationLogic(

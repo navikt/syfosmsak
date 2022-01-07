@@ -12,47 +12,51 @@ import no.nav.syfo.model.AvsenderSystem
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.pdl.service.PdlPersonService
-import no.nav.syfo.sak.avro.RegisterJournal
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.wrapExceptions
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 
-class JournalService(
+interface JournalService {
+    suspend fun onJournalRequest(receivedSykmelding: ReceivedSykmelding, validationResult: ValidationResult, loggingMeta: LoggingMeta)
+}
+
+abstract class AbstractJournalService<T> (
     private val journalCreatedTopic: String,
-    private val producer: KafkaProducer<String, RegisterJournal>,
+    private val producer: KafkaProducer<String, T>,
     private val sakClient: SakClient,
     private val dokArkivClient: DokArkivClient,
     private val pdfgenClient: PdfgenClient,
     private val pdlPersonService: PdlPersonService
-) {
-    suspend fun onJournalRequest(receivedSykmelding: ReceivedSykmelding, validationResult: ValidationResult, loggingMeta: LoggingMeta) {
+) : JournalService {
+    abstract fun getKafkaMessage(
+        receivedSykmelding: ReceivedSykmelding,
+        sakid: String,
+        journalpostid: String
+    ): T
+    abstract val kafkaCluster: String
+    override suspend fun onJournalRequest(receivedSykmelding: ReceivedSykmelding, validationResult: ValidationResult, loggingMeta: LoggingMeta) {
         wrapExceptions(loggingMeta) {
-            log.info("Mottok en sykmelding, prover å lagre i Joark {}", fields(loggingMeta))
+            log.info("$kafkaCluster: Mottok en sykmelding, prover å lagre i Joark {}", fields(loggingMeta))
 
             val sak = sakClient.findOrCreateSak(receivedSykmelding.sykmelding.pasientAktoerId, receivedSykmelding.msgId, loggingMeta)
             val sakid = sak.id.toString()
 
             val journalpostid = opprettEllerFinnPDFJournalpost(receivedSykmelding, validationResult, sakid, loggingMeta)
-            val registerJournal = RegisterJournal().apply {
-                journalpostKilde = "AS36"
-                messageId = receivedSykmelding.msgId
-                sakId = sakid
-                journalpostId = journalpostid
-            }
+            val registerJournal = getKafkaMessage(receivedSykmelding, sakid, journalpostid)
 
             try {
                 producer.send(ProducerRecord(journalCreatedTopic, receivedSykmelding.sykmelding.id, registerJournal)).get()
-                log.info("message sendt to kafka", fields(loggingMeta))
+                log.info("$kafkaCluster: message sendt to kafka", fields(loggingMeta))
             } catch (ex: Exception) {
-                log.error("Error sending to kafkatopic {} {}", journalCreatedTopic, fields(loggingMeta))
+                log.error("$kafkaCluster: Error sending to kafkatopic {} {}", journalCreatedTopic, fields(loggingMeta))
                 throw ex
             }
             if (skalOpprettePdf(receivedSykmelding.sykmelding.avsenderSystem)) {
                 MELDING_LAGER_I_JOARK.inc()
                 log.info(
-                    "Melding lagret i Joark med journalpostId {}, {}",
-                    registerJournal.journalpostId,
+                    "$kafkaCluster: Melding lagret i Joark med journalpostId {}, {}",
+                    journalpostid,
                     fields(loggingMeta)
                 )
             }
