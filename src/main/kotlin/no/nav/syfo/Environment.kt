@@ -50,7 +50,7 @@ data class Environment(
     val behandlingsUtfallTopic: String = "teamsykmelding.sykmelding-behandlingsutfall",
     val privatSykmeldingSak: String = "teamsykmelding.privat-sykmelding-sak",
     val oppgaveJournalOpprettet: String = "teamsykmelding.oppgave-journal-opprettet",
-    val applicationId: String = getEnvVar("KAFKA_STREAMS_APPLICATION_ID")
+    val applicationId: String = getEnvVar("KAFKA_STREAMS_APPLICATION_ID", "default")
 ) : KafkaConfig
 
 data class VaultCredentials(
