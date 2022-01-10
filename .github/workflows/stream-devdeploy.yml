@@ -1,4 +1,4 @@
-name: Deploy to dev
+name: Stream deploy to dev
 on:
   push:
     branches:

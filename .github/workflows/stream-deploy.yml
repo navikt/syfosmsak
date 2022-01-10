@@ -1,4 +1,4 @@
-name: Deploy to dev and prod
+name: Stream deploy to dev and prod
 on:
   push:
     branches:
