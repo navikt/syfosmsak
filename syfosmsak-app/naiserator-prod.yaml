@@ -44,7 +44,6 @@ spec:
         mountPath: /secrets/serviceuser
   kafka:
     pool: nav-prod
-    streams: true
   webproxy: true
   env:
     - name: DOK_ARKIV_URL

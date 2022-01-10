@@ -44,13 +44,8 @@ data class Environment(
     override val truststore: String? = getEnvVar("NAV_TRUSTSTORE_PATH"),
     override val truststorePassword: String? = getEnvVar("NAV_TRUSTSTORE_PASSWORD"),
     override val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
-    val okSykmeldingTopic: String = "teamsykmelding.ok-sykmelding",
-    val avvistSykmeldingTopic: String = "teamsykmelding.avvist-sykmelding",
-    val manuellSykmeldingTopic: String = "teamsykmelding.manuell-behandling-sykmelding",
-    val behandlingsUtfallTopic: String = "teamsykmelding.sykmelding-behandlingsutfall",
     val privatSykmeldingSak: String = "teamsykmelding.privat-sykmelding-sak",
-    val oppgaveJournalOpprettet: String = "teamsykmelding.oppgave-journal-opprettet",
-    val applicationId: String = getEnvVar("KAFKA_STREAMS_APPLICATION_ID", "default")
+    val oppgaveJournalOpprettet: String = "teamsykmelding.oppgave-journal-opprettet"
 ) : KafkaConfig
 
 data class VaultCredentials(

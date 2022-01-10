@@ -152,71 +152,7 @@ fun main() {
     val journalAivenService = JournalServiceAiven(env.oppgaveJournalOpprettet, aivenProducer, sakClient, dokArkivClient, pdfgenClient, pdlPersonService)
     applicationState.ready = true
 
-    // startKafkaAivenStream(env, applicationState)
     launchListeners(env, applicationState, consumerConfig, journalService, journalAivenService, streamProperties)
-}
-
-fun startKafkaAivenStream(env: Environment, applicationState: ApplicationState) {
-    val streamsBuilder = StreamsBuilder()
-    val streamProperties = KafkaUtils.getAivenKafkaConfig().toStreamsConfig(env.applicationName, Serdes.String()::class, Serdes.String()::class)
-    streamProperties[StreamsConfig.APPLICATION_ID_CONFIG] = env.applicationId
-    val inputStream = streamsBuilder.stream(
-        listOf(
-            env.okSykmeldingTopic,
-            env.avvistSykmeldingTopic,
-            env.manuellSykmeldingTopic
-        ),
-        Consumed.with(Serdes.String(), Serdes.String())
-    ).filter { _, value ->
-        value?.let { objectMapper.readValue<ReceivedSykmelding>(value).merknader?.any { it.type == "UNDER_BEHANDLING" } != true } ?: true
-    }
-
-    val behandlingsutfallStream = streamsBuilder.stream(
-        listOf(
-            env.behandlingsUtfallTopic
-        ),
-        Consumed.with(Serdes.String(), Serdes.String())
-    ).filter { _, value ->
-        !(value?.let { objectMapper.readValue<ValidationResult>(value).ruleHits.any { it.ruleName == "UNDER_BEHANDLING" } } ?: false)
-    }
-
-    val joinWindow = JoinWindows.of(Duration.ofDays(14))
-
-    inputStream.join(
-        behandlingsutfallStream,
-        { sm2013, behandling ->
-            log.info("streamed to aiven")
-            objectMapper.writeValueAsString(
-                BehandlingsUtfallReceivedSykmelding(
-                    receivedSykmelding = sm2013.toByteArray(Charsets.UTF_8),
-                    behandlingsUtfall = behandling.toByteArray(Charsets.UTF_8)
-                )
-            )
-        },
-        joinWindow
-    ).to(env.privatSykmeldingSak)
-
-    val stream = KafkaStreams(streamsBuilder.build(), streamProperties)
-    stream.setUncaughtExceptionHandler { err ->
-        log.error("Aiven: Caught exception in stream: ${err.message}", err)
-        stream.close(Duration.ofSeconds(30))
-        applicationState.ready = false
-        applicationState.alive = false
-        throw err
-    }
-
-    stream.setStateListener { newState, oldState ->
-        log.info("Aiven: From state={} to state={}", oldState, newState)
-        if (newState == KafkaStreams.State.ERROR) {
-            // if the stream has died there is no reason to keep spinning
-            log.error("Aiven: Closing stream because it went into error state")
-            stream.close(Duration.ofSeconds(30))
-            log.error("Aiven: Restarter applikasjon")
-            applicationState.ready = false
-            applicationState.alive = false
-        }
-    }
-    stream.start()
 }
 
 fun createKafkaStream(streamProperties: Properties, env: Environment): KafkaStreams {

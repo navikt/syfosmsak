@@ -8,7 +8,7 @@ data class Environment(
     val manuellSykmeldingTopic: String = "teamsykmelding.manuell-behandling-sykmelding",
     val behandlingsUtfallTopic: String = "teamsykmelding.sykmelding-behandlingsutfall",
     val privatSykmeldingSak: String = "teamsykmelding.privat-sykmelding-sak",
-    val applicationId: String = getEnvVar("KAFKA_STREAMS_APPLICATION_ID", "default")
+    val applicationId: String = getEnvVar("KAFKA_STREAMS_APPLICATION_ID")
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
