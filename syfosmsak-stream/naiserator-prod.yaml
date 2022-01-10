@@ -36,3 +36,6 @@ spec:
   vault:
     enabled: false
   webproxy: true
+  kafka:
+    pool: nav-prod
+    streams: true
