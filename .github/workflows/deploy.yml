@@ -4,7 +4,7 @@ on:
     branches:
       - master
     paths:
-      - 'syfosmsak-app'
+      - 'syfosmsak-app/**'
       - '.github/workflows/deploy.yml'
 env:
   IMAGE: docker.pkg.github.com/${{ github.repository }}/syfosmsak-app:${{ github.sha }}
