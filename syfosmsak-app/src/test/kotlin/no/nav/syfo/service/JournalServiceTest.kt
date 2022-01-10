@@ -2,7 +2,6 @@ package no.nav.syfo.service
 
 import io.mockk.coEvery
 import io.mockk.mockk
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.time.delay
 import kotlinx.coroutines.withTimeout
