@@ -32,89 +32,97 @@ plugins {
 val githubUser: String by project
 val githubPassword: String by project
 
-repositories {
-    mavenCentral()
-    maven(url = "https://packages.confluent.io/maven/")
-    maven {
-        url = uri("https://maven.pkg.github.com/navikt/syfosm-common")
-        credentials {
-            username = githubUser
-            password = githubPassword
+allprojects {
+    group = "no.nav.syfo"
+    version = "1.0.0"
+
+    repositories {
+        mavenCentral()
+        maven(url = "https://packages.confluent.io/maven/")
+        maven {
+            url = uri("https://maven.pkg.github.com/navikt/syfosm-common")
+            credentials {
+                username = githubUser
+                password = githubPassword
+            }
         }
     }
 }
+subprojects {
+    apply(plugin = "org.jetbrains.kotlin.jvm")
 
-dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
+    dependencies {
+        implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-    implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
-    implementation("io.prometheus:simpleclient_common:$prometheusVersion")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+        implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
+        implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
-    implementation("io.ktor:ktor-server-netty:$ktorVersion")
-    implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    implementation("io.ktor:ktor-client-json:$ktorVersion")
-    implementation("io.ktor:ktor-client-auth-basic:$ktorVersion")
-    implementation("io.ktor:ktor-client-jackson:$ktorVersion")
-    implementation ("io.ktor:ktor-jackson:$ktorVersion")
+        implementation("io.ktor:ktor-server-netty:$ktorVersion")
+        implementation("io.ktor:ktor-client-apache:$ktorVersion")
+        implementation("io.ktor:ktor-client-json:$ktorVersion")
+        implementation("io.ktor:ktor-client-auth-basic:$ktorVersion")
+        implementation("io.ktor:ktor-client-jackson:$ktorVersion")
+        implementation("io.ktor:ktor-jackson:$ktorVersion")
 
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+        implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 
-    implementation("ch.qos.logback:logback-classic:$logbackVersion")
-    implementation("net.logstash.logback:logstash-logback-encoder:$logstashLogbackEncoder")
+        implementation("ch.qos.logback:logback-classic:$logbackVersion")
+        implementation("net.logstash.logback:logstash-logback-encoder:$logstashLogbackEncoder")
 
-    implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
-    implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
-    implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-diagnosis-codes:$smCommonVersion")
+        implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
+        implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
+        implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
+        implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
+        implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
+        implementation("no.nav.helse:syfosm-common-diagnosis-codes:$smCommonVersion")
 
-    implementation("no.nav.syfo.schemas:syfosmoppgave-avro:$syfosmoppgaveSchemasVersion")
+        implementation("no.nav.syfo.schemas:syfosmoppgave-avro:$syfosmoppgaveSchemasVersion")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
-    testImplementation("org.amshove.kluent:kluent:$kluentVersion")
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
-    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
-    testImplementation ("io.mockk:mockk:$ioMockVersion")
+        testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+        testImplementation("org.amshove.kluent:kluent:$kluentVersion")
+        testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
+        testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
+        testImplementation("io.mockk:mockk:$ioMockVersion")
 
-    testImplementation("org.junit.platform:junit-platform-launcher:$junitPlatformLauncher")
-    testRuntimeOnly("org.spekframework.spek2:spek-runtime-jvm:$spekVersion")
-    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion")
+        testImplementation("org.junit.platform:junit-platform-launcher:$junitPlatformLauncher")
+        testRuntimeOnly("org.spekframework.spek2:spek-runtime-jvm:$spekVersion")
+        testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion")
+
+    }
+    tasks {
+        withType<Jar> {
+            manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
+        }
+
+        create("printVersion") {
+            doLast {
+                println(project.version)
+            }
+        }
+
+        withType<ShadowJar> {
+            transform(ServiceFileTransformer::class.java) {
+                setPath("META-INF/cxf")
+                include("bus-extensions.txt")
+            }
+        }
+
+        withType<Test> {
+            useJUnitPlatform {
+                includeEngines("spek2")
+            }
+            testLogging.showStandardStreams = true
+        }
+
+        withType<KotlinCompile> {
+            kotlinOptions.jvmTarget = "17"
+        }
+
+        "check" {
+            dependsOn("formatKotlin")
+        }
+    }
 
 }
 
-
-tasks {
-    withType<Jar> {
-        manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
-    }
-
-    create("printVersion") {
-        doLast {
-            println(project.version)
-        }
-    }
-
-    withType<ShadowJar> {
-        transform(ServiceFileTransformer::class.java) {
-            setPath("META-INF/cxf")
-            include("bus-extensions.txt")
-        }
-    }
-
-    withType<Test> {
-        useJUnitPlatform {
-            includeEngines("spek2")
-        }
-        testLogging.showStandardStreams = true
-    }
-
-    withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
-    }
-
-    "check" {
-        dependsOn("formatKotlin")
-    }
-}
