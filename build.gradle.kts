@@ -118,6 +118,10 @@ subprojects {
         withType<KotlinCompile> {
             kotlinOptions.jvmTarget = "17"
         }
+
+        "check" {
+            dependsOn("formatKotlin")
+        }
     }
 
 }

@@ -152,7 +152,7 @@ fun main() {
     val journalAivenService = JournalServiceAiven(env.oppgaveJournalOpprettet, aivenProducer, sakClient, dokArkivClient, pdfgenClient, pdlPersonService)
     applicationState.ready = true
 
-    //startKafkaAivenStream(env, applicationState)
+    // startKafkaAivenStream(env, applicationState)
     launchListeners(env, applicationState, consumerConfig, journalService, journalAivenService, streamProperties)
 }
 
