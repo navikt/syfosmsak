@@ -7,6 +7,7 @@ on:
     paths:
       - 'syfosmsak-app/**'
       - '.github/workflows/devdeploy.yml'
+      - 'build.gradle.kts'
 env:
   IMAGE: docker.pkg.github.com/${{ github.repository }}/syfosmsak-app:${{ github.sha }}
 
