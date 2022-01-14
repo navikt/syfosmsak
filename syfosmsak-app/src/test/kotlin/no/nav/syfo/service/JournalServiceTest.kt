@@ -12,6 +12,7 @@ import no.nav.syfo.client.SakClient
 import no.nav.syfo.createListener
 import no.nav.syfo.generateSykmelding
 import no.nav.syfo.model.AvsenderSystem
+import no.nav.syfo.model.JournalKafkaMessage
 import no.nav.syfo.model.JournalpostResponse
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.SakResponse
@@ -21,8 +22,6 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
 import no.nav.syfo.pdl.service.PdlPersonService
-import no.nav.syfo.sak.avro.RegisterJournal
-import no.nav.syfo.service.onprem.JournalServiceOnPrem
 import no.nav.syfo.util.LoggingMeta
 import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -33,12 +32,12 @@ import java.time.LocalDateTime
 import java.time.ZonedDateTime
 
 object JournalServiceTest : Spek({
-    val producer = mockk<KafkaProducer<String, RegisterJournal>>(relaxed = true)
+    val producer = mockk<KafkaProducer<String, JournalKafkaMessage>>(relaxed = true)
     val sakClient = mockk<SakClient>()
     val dokArkivClient = mockk<DokArkivClient>()
     val pdfgenClient = mockk<PdfgenClient>()
     val pdlPersonService = mockk<PdlPersonService>()
-    val journalService = JournalServiceOnPrem("topic", producer, sakClient, dokArkivClient, pdfgenClient, pdlPersonService)
+    val journalService = JournalService("topic", producer, sakClient, dokArkivClient, pdfgenClient, pdlPersonService)
 
     val validationResult = ValidationResult(Status.OK, emptyList())
     val loggingMeta = LoggingMeta("", "", "", "")
