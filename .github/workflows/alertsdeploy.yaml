@@ -16,6 +16,6 @@ jobs:
       - name: deploy to prod
         uses: nais/deploy/actions/deploy@v1
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY_TEAMSYKMELDING }}
           CLUSTER: prod-gcp
           RESOURCE: syfosmsak-stream/alerts.yaml
