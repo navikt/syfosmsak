@@ -5,7 +5,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val confluentVersion = "6.2.2"
 val coroutinesVersion = "1.5.1"
 val jacksonVersion = "2.13.0"
 val kafkaVersion = "2.8.0"
@@ -16,7 +15,6 @@ val logbackVersion = "1.2.8"
 val prometheusVersion = "0.12.0"
 val smCommonVersion = "1.a92720c"
 val spekVersion = "2.0.17"
-val syfosmoppgaveSchemasVersion = "785e8a93a3b881e89862035abe539c795c1222dd"
 val junitPlatformLauncher = "1.8.2"
 val ioMockVersion = "1.12.1"
 val kotlinVersion = "1.6.0"
@@ -70,14 +68,11 @@ subprojects {
         implementation("ch.qos.logback:logback-classic:$logbackVersion")
         implementation("net.logstash.logback:logstash-logback-encoder:$logstashLogbackEncoder")
 
-        implementation("io.confluent:kafka-avro-serializer:$confluentVersion")
         implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
         implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
         implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
         implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
         implementation("no.nav.helse:syfosm-common-diagnosis-codes:$smCommonVersion")
-
-        implementation("no.nav.syfo.schemas:syfosmoppgave-avro:$syfosmoppgaveSchemasVersion")
 
         testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
         testImplementation("org.amshove.kluent:kluent:$kluentVersion")
