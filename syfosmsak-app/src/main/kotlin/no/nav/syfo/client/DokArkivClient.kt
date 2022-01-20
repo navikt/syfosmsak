@@ -32,6 +32,7 @@ import no.nav.syfo.validation.validatePersonAndDNumber
 import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Base64
 
 class DokArkivClient(
     private val url: String,
@@ -141,7 +142,7 @@ fun leggtilDokument(
                                 filtype = findFiltype(vedlegg),
                                 filnavn = "Vedlegg_nr_${index}_Sykmelding_$msgId",
                                 variantformat = "ARKIV",
-                                fysiskDokument = vedlegg.content.content.toByteArray()
+                                fysiskDokument = Base64.getMimeDecoder().decode(vedlegg.content.content.toByteArray())
                             )
                         ),
                         tittel = "Vedlegg til sykmelding ${getFomTomTekst(receivedSykmelding)}"
