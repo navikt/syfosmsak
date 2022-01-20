@@ -144,7 +144,7 @@ fun leggtilDokument(
                                 fysiskDokument = vedlegg.content.content.toByteArray()
                             )
                         ),
-                        tittel = "Vedlegg til sykmelding"
+                        tittel = "Vedlegg til sykmelding ${getFomTomTekst(receivedSykmelding)}"
                     )
                 )
             }
