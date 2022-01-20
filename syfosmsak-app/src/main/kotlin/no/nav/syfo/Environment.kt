@@ -20,7 +20,8 @@ data class Environment(
     val clientSecretV2: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
     val pdlScope: String = getEnvVar("PDL_SCOPE"),
     val privatSykmeldingSak: String = "teamsykmelding.privat-sykmelding-sak",
-    val oppgaveJournalOpprettet: String = "teamsykmelding.oppgave-journal-opprettet"
+    val oppgaveJournalOpprettet: String = "teamsykmelding.oppgave-journal-opprettet",
+    val sykmeldingVedleggBucketName: String = getEnvVar("SYKMELDING_VEDLEGG_BUCKET_NAME")
 )
 
 data class VaultCredentials(

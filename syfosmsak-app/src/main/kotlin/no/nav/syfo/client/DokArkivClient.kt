@@ -14,6 +14,7 @@ import no.nav.syfo.log
 import no.nav.syfo.model.AvsenderMottaker
 import no.nav.syfo.model.Behandler
 import no.nav.syfo.model.Bruker
+import no.nav.syfo.model.Content
 import no.nav.syfo.model.Dokument
 import no.nav.syfo.model.Dokumentvarianter
 import no.nav.syfo.model.JournalpostRequest
@@ -23,9 +24,12 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Sak
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
+import no.nav.syfo.model.Vedlegg
 import no.nav.syfo.objectMapper
 import no.nav.syfo.util.LoggingMeta
+import no.nav.syfo.util.imageToPDF
 import no.nav.syfo.validation.validatePersonAndDNumber
+import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -66,7 +70,8 @@ fun createJournalpostPayload(
     receivedSykmelding: ReceivedSykmelding,
     caseId: String,
     pdf: ByteArray,
-    validationResult: ValidationResult
+    validationResult: ValidationResult,
+    vedlegg: List<Vedlegg>
 ) = JournalpostRequest(
     avsenderMottaker = when (validatePersonAndDNumber(receivedSykmelding.sykmelding.behandler.fnr)) {
         true -> createAvsenderMottakerValidFnr(receivedSykmelding)
@@ -76,7 +81,34 @@ fun createJournalpostPayload(
         id = receivedSykmelding.personNrPasient,
         idType = "FNR"
     ),
-    dokumenter = listOf(
+    dokumenter = leggtilDokument(
+        msgId = receivedSykmelding.msgId,
+        receivedSykmelding = receivedSykmelding,
+        pdf = pdf,
+        validationResult = validationResult,
+        vedleggListe = vedlegg
+    ),
+    eksternReferanseId = receivedSykmelding.sykmelding.id,
+    journalfoerendeEnhet = "9999",
+    journalpostType = "INNGAAENDE",
+    kanal = "HELSENETTET",
+    sak = Sak(
+        arkivsaksnummer = caseId,
+        arkivsaksystem = "GSAK"
+    ),
+    tema = "SYM",
+    tittel = createTittleJournalpost(validationResult, receivedSykmelding)
+)
+
+fun leggtilDokument(
+    msgId: String,
+    receivedSykmelding: ReceivedSykmelding,
+    pdf: ByteArray,
+    validationResult: ValidationResult,
+    vedleggListe: List<Vedlegg>?
+): List<Dokument> {
+    val listDokument = ArrayList<Dokument>()
+    listDokument.add(
         Dokument(
             dokumentvarianter = listOf(
                 Dokumentvarianter(
@@ -95,18 +127,59 @@ fun createJournalpostPayload(
             tittel = createTittleJournalpost(validationResult, receivedSykmelding),
             brevkode = "NAV 08-07.04 A"
         )
-    ),
-    eksternReferanseId = receivedSykmelding.sykmelding.id,
-    journalfoerendeEnhet = "9999",
-    journalpostType = "INNGAAENDE",
-    kanal = "HELSENETTET",
-    sak = Sak(
-        arkivsaksnummer = caseId,
-        arkivsaksystem = "GSAK"
-    ),
-    tema = "SYM",
-    tittel = createTittleJournalpost(validationResult, receivedSykmelding)
-)
+    )
+    if (!vedleggListe.isNullOrEmpty()) {
+        val listVedleggDokumenter = ArrayList<Dokument>()
+        vedleggListe
+            .filter { vedlegg -> vedlegg.content.content.isNotEmpty() }
+            .map { vedlegg -> vedleggToPDF(vedlegg) }
+            .mapIndexed { index, vedlegg ->
+                listVedleggDokumenter.add(
+                    Dokument(
+                        dokumentvarianter = listOf(
+                            Dokumentvarianter(
+                                filtype = findFiltype(vedlegg),
+                                filnavn = "Vedlegg_nr_${index}_Sykmelding_$msgId",
+                                variantformat = "ARKIV",
+                                fysiskDokument = vedlegg.content.content.toByteArray()
+                            )
+                        ),
+                        tittel = "Vedlegg til sykmelding"
+                    )
+                )
+            }
+        listVedleggDokumenter.map { vedlegg ->
+            listDokument.add(vedlegg)
+        }
+    }
+    return listDokument
+}
+
+fun vedleggToPDF(vedlegg: Vedlegg): Vedlegg {
+    if (findFiltype(vedlegg) == "PDFA") return vedlegg
+    log.info("Converting vedlegg of type ${vedlegg.type} to PDFA")
+
+    val image =
+        ByteArrayOutputStream().use { outputStream ->
+            imageToPDF(vedlegg.content.content.toByteArray().inputStream(), outputStream)
+            outputStream.toByteArray()
+        }
+
+    return Vedlegg(
+        content = Content(vedlegg.content.contentType, image.contentToString()),
+        type = "application/pdf",
+        description = vedlegg.description
+    )
+}
+
+fun findFiltype(vedlegg: Vedlegg): String =
+    when (vedlegg.type) {
+        "application/pdf" -> "PDFA"
+        "image/tiff" -> "TIFF"
+        "image/png" -> "PNG"
+        "image/jpeg" -> "JPEG"
+        else -> throw RuntimeException("Vedlegget er av av ukjent mimeType ${vedlegg.type}")
+    }
 
 fun createAvsenderMottakerValidFnr(receivedSykmelding: ReceivedSykmelding): AvsenderMottaker = AvsenderMottaker(
     id = receivedSykmelding.sykmelding.behandler.fnr,

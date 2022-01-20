@@ -34,7 +34,8 @@ object SortedPeriodeSpek : Spek({
             merknader = null,
             partnerreferanse = null,
             legeHelsepersonellkategori = null,
-            legeHprNr = null
+            legeHprNr = null,
+            vedlegg = null
         )
     }
 
