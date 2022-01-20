@@ -60,8 +60,9 @@ class JournalService(
             val vedleggListe: List<Vedlegg> = if (receivedSykmelding.vedlegg.isNullOrEmpty()) {
                 emptyList()
             } else {
+                log.info("Sykmelding har ${receivedSykmelding.vedlegg!!.size} vedlegg {}", StructuredArguments.fields(loggingMeta))
                 receivedSykmelding.vedlegg!!.map {
-                    bucketService.getVedleggFromBucket(it)
+                    bucketService.getVedleggFromBucket(it, loggingMeta)
                 }
             }
             val patient = pdlPersonService.getPdlPerson(receivedSykmelding.personNrPasient, loggingMeta)

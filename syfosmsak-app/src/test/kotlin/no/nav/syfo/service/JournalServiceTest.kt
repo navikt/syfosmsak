@@ -118,7 +118,7 @@ object JournalServiceTest : Spek({
             }
         }
         it("Journalfører vedlegg hvis sykmelding inneholder vedlegg") {
-            coEvery { bucketService.getVedleggFromBucket(any()) } returns Vedlegg(Content("Base64Container", "base64"), "application/pdf", "vedlegg2.pdf")
+            coEvery { bucketService.getVedleggFromBucket(any(), any()) } returns Vedlegg(Content("Base64Container", "base64"), "application/pdf", "vedlegg2.pdf")
             val sykmelding = generateReceivedSykmelding(generateSykmelding()).copy(vedlegg = listOf("vedleggsid1"))
 
             runBlocking {
