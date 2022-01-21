@@ -14,9 +14,9 @@ import no.nav.syfo.log
 import no.nav.syfo.model.AvsenderMottaker
 import no.nav.syfo.model.Behandler
 import no.nav.syfo.model.Bruker
-import no.nav.syfo.model.Content
 import no.nav.syfo.model.Dokument
 import no.nav.syfo.model.Dokumentvarianter
+import no.nav.syfo.model.GosysVedlegg
 import no.nav.syfo.model.JournalpostRequest
 import no.nav.syfo.model.JournalpostResponse
 import no.nav.syfo.model.Periode
@@ -133,7 +133,8 @@ fun leggtilDokument(
         val listVedleggDokumenter = ArrayList<Dokument>()
         vedleggListe
             .filter { vedlegg -> vedlegg.content.content.isNotEmpty() }
-            .map { vedlegg -> vedleggToPDF(vedlegg) }
+            .map { vedlegg -> toGosysVedlegg(vedlegg) }
+            .map { gosysVedlegg -> vedleggToPDF(gosysVedlegg) }
             .mapIndexed { index, vedlegg ->
                 listVedleggDokumenter.add(
                     Dokument(
@@ -142,7 +143,7 @@ fun leggtilDokument(
                                 filtype = findFiltype(vedlegg),
                                 filnavn = "Vedlegg_nr_${index}_Sykmelding_$msgId",
                                 variantformat = "ARKIV",
-                                fysiskDokument = Base64.getMimeDecoder().decode(vedlegg.content.content.toByteArray())
+                                fysiskDokument = vedlegg.content
                             )
                         ),
                         tittel = "Vedlegg til sykmelding ${getFomTomTekst(receivedSykmelding)}"
@@ -155,31 +156,38 @@ fun leggtilDokument(
     }
     return listDokument
 }
-
-fun vedleggToPDF(vedlegg: Vedlegg): Vedlegg {
-    if (findFiltype(vedlegg) == "PDFA") return vedlegg
-    log.info("Converting vedlegg of type ${vedlegg.type} to PDFA")
-
-    val image =
-        ByteArrayOutputStream().use { outputStream ->
-            imageToPDF(vedlegg.content.content.toByteArray().inputStream(), outputStream)
-            outputStream.toByteArray()
-        }
-
-    return Vedlegg(
-        content = Content(vedlegg.content.contentType, image.contentToString()),
-        type = "application/pdf",
+fun toGosysVedlegg(vedlegg: Vedlegg): GosysVedlegg {
+    return GosysVedlegg(
+        contentType = vedlegg.type,
+        content = Base64.getMimeDecoder().decode(vedlegg.content.content),
         description = vedlegg.description
     )
 }
 
-fun findFiltype(vedlegg: Vedlegg): String =
-    when (vedlegg.type) {
+fun vedleggToPDF(vedlegg: GosysVedlegg): GosysVedlegg {
+    if (findFiltype(vedlegg) == "PDFA") return vedlegg
+    log.info("Converting vedlegg of type ${vedlegg.contentType} to PDFA")
+
+    val image =
+        ByteArrayOutputStream().use { outputStream ->
+            imageToPDF(vedlegg.content.inputStream(), outputStream)
+            outputStream.toByteArray()
+        }
+
+    return GosysVedlegg(
+        content = image,
+        contentType = "application/pdf",
+        description = vedlegg.description
+    )
+}
+
+fun findFiltype(vedlegg: GosysVedlegg): String =
+    when (vedlegg.contentType) {
         "application/pdf" -> "PDFA"
         "image/tiff" -> "TIFF"
         "image/png" -> "PNG"
         "image/jpeg" -> "JPEG"
-        else -> throw RuntimeException("Vedlegget er av av ukjent mimeType ${vedlegg.type}")
+        else -> throw RuntimeException("Vedlegget er av av ukjent mimeType ${vedlegg.contentType}")
     }
 
 fun createAvsenderMottakerValidFnr(receivedSykmelding: ReceivedSykmelding): AvsenderMottaker = AvsenderMottaker(

@@ -18,3 +18,5 @@ data class VedleggMessage(
 data class Content(val contentType: String, val content: String)
 
 data class BehandlerInfo(val fornavn: String, val etternavn: String, val fnr: String?)
+
+data class GosysVedlegg(val contentType: String, val content: ByteArray, val description: String)
