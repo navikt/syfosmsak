@@ -42,6 +42,8 @@ spec:
     paths:
       - kvPath: serviceuser/data/prod/srvsyfosmsak
         mountPath: /secrets/serviceuser
+      - kvPath: /kv/prod/fss/syfosmsak/teamsykmelding
+        mountPath: /var/run/secrets/nais.io/vault
   kafka:
     pool: nav-prod
   webproxy: true
@@ -54,3 +56,5 @@ spec:
       value: api://prod-fss.pdl.pdl-api/.default
     - name: OPPRETT_SAK_URL
       value: https://sak.intern.nav.no/api/v1/saker
+    - name: SYKMELDING_VEDLEGG_BUCKET_NAME
+      value: teamsykmelding-sykmelding-vedlegg-bucket-prod

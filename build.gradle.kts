@@ -13,11 +13,13 @@ val ktorVersion = "1.6.7"
 val logstashLogbackEncoder = "7.0.1"
 val logbackVersion = "1.2.8"
 val prometheusVersion = "0.12.0"
-val smCommonVersion = "1.a92720c"
+val smCommonVersion = "1.381992d"
 val spekVersion = "2.0.17"
 val junitPlatformLauncher = "1.8.2"
 val ioMockVersion = "1.12.1"
 val kotlinVersion = "1.6.0"
+val pdfboxVersion = "2.0.24"
+val googleCloudStorageVersion = "2.3.0"
 
 plugins {
     java
@@ -73,6 +75,9 @@ subprojects {
         implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
         implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
         implementation("no.nav.helse:syfosm-common-diagnosis-codes:$smCommonVersion")
+
+        implementation("org.apache.pdfbox:pdfbox:$pdfboxVersion")
+        implementation("com.google.cloud:google-cloud-storage:$googleCloudStorageVersion")
 
         testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
         testImplementation("org.amshove.kluent:kluent:$kluentVersion")

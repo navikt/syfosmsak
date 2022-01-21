@@ -12,6 +12,7 @@ import no.nav.syfo.model.AvsenderSystem
 import no.nav.syfo.model.JournalKafkaMessage
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
+import no.nav.syfo.model.Vedlegg
 import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.wrapExceptions
@@ -24,7 +25,8 @@ class JournalService(
     private val sakClient: SakClient,
     private val dokArkivClient: DokArkivClient,
     private val pdfgenClient: PdfgenClient,
-    private val pdlPersonService: PdlPersonService
+    private val pdlPersonService: PdlPersonService,
+    private val bucketService: BucketService
 ) {
     suspend fun onJournalRequest(receivedSykmelding: ReceivedSykmelding, validationResult: ValidationResult, loggingMeta: LoggingMeta) {
         wrapExceptions(loggingMeta) {
@@ -55,13 +57,21 @@ class JournalService(
 
     suspend fun opprettEllerFinnPDFJournalpost(receivedSykmelding: ReceivedSykmelding, validationResult: ValidationResult, sakid: String, loggingMeta: LoggingMeta): String {
         return if (skalOpprettePdf(receivedSykmelding.sykmelding.avsenderSystem)) {
+            val vedleggListe: List<Vedlegg> = if (receivedSykmelding.vedlegg.isNullOrEmpty()) {
+                emptyList()
+            } else {
+                log.info("Sykmelding har ${receivedSykmelding.vedlegg!!.size} vedlegg {}", StructuredArguments.fields(loggingMeta))
+                receivedSykmelding.vedlegg!!.map {
+                    bucketService.getVedleggFromBucket(it, loggingMeta)
+                }
+            }
             val patient = pdlPersonService.getPdlPerson(receivedSykmelding.personNrPasient, loggingMeta)
             val pdfPayload = createPdfPayload(receivedSykmelding, validationResult, patient)
 
             val pdf = pdfgenClient.createPdf(pdfPayload)
             log.info("PDF generert {}", StructuredArguments.fields(loggingMeta))
 
-            val journalpostPayload = createJournalpostPayload(receivedSykmelding, sakid, pdf, validationResult)
+            val journalpostPayload = createJournalpostPayload(receivedSykmelding, sakid, pdf, validationResult, vedleggListe)
             val journalpost = dokArkivClient.createJournalpost(journalpostPayload, loggingMeta)
 
             journalpost.journalpostId
