@@ -11,7 +11,6 @@ import kotlinx.coroutines.withTimeout
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.client.DokArkivClient
 import no.nav.syfo.client.PdfgenClient
-import no.nav.syfo.client.SakClient
 import no.nav.syfo.createListener
 import no.nav.syfo.generateSykmelding
 import no.nav.syfo.model.AvsenderSystem
@@ -19,7 +18,6 @@ import no.nav.syfo.model.Content
 import no.nav.syfo.model.JournalKafkaMessage
 import no.nav.syfo.model.JournalpostResponse
 import no.nav.syfo.model.ReceivedSykmelding
-import no.nav.syfo.model.SakResponse
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.Sykmelding
 import no.nav.syfo.model.ValidationResult
@@ -34,17 +32,15 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.ZonedDateTime
 
 @DelicateCoroutinesApi
 object JournalServiceTest : Spek({
     val producer = mockk<KafkaProducer<String, JournalKafkaMessage>>(relaxed = true)
-    val sakClient = mockk<SakClient>()
     val dokArkivClient = mockk<DokArkivClient>()
     val pdfgenClient = mockk<PdfgenClient>()
     val pdlPersonService = mockk<PdlPersonService>()
     val bucketService = mockk<BucketService>()
-    val journalService = JournalService("topic", producer, sakClient, dokArkivClient, pdfgenClient, pdlPersonService, bucketService)
+    val journalService = JournalService("topic", producer, dokArkivClient, pdfgenClient, pdlPersonService, bucketService)
 
     val validationResult = ValidationResult(Status.OK, emptyList())
     val loggingMeta = LoggingMeta("", "", "", "")
@@ -53,7 +49,6 @@ object JournalServiceTest : Spek({
 
     beforeEachTest {
         clearMocks(dokArkivClient)
-        coEvery { sakClient.findOrCreateSak(any(), any(), any()) } returns SakResponse(1L, "SYM", "aktørid", null, null, "FS22", "srv", ZonedDateTime.now())
         coEvery { pdlPersonService.getPdlPerson(any(), any()) } returns PdlPerson(Navn("fornavn", null, "etternavn"), "fnr", "aktørid", null)
         coEvery { pdfgenClient.createPdf(any()) } returns "PDF".toByteArray(Charsets.UTF_8)
         coEvery { dokArkivClient.createJournalpost(any(), any()) } returns JournalpostResponse(dokumenter = emptyList(), journalpostId = journalpostId, journalpostferdigstilt = true)
@@ -92,7 +87,7 @@ object JournalServiceTest : Spek({
 
             runBlocking {
                 val opprettetJournalpostId =
-                    journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, "1", loggingMeta)
+                    journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, loggingMeta)
 
                 opprettetJournalpostId shouldBeEqualTo journalpostId
             }
@@ -102,7 +97,7 @@ object JournalServiceTest : Spek({
 
             runBlocking {
                 val opprettetJournalpostId =
-                    journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, "1", loggingMeta)
+                    journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, loggingMeta)
 
                 opprettetJournalpostId shouldBeEqualTo journalpostId
             }
@@ -112,7 +107,7 @@ object JournalServiceTest : Spek({
 
             runBlocking {
                 val opprettetJournalpostId =
-                    journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, "1", loggingMeta)
+                    journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, loggingMeta)
 
                 opprettetJournalpostId shouldBeEqualTo journalpostIdPapirsykmelding
             }
@@ -123,7 +118,7 @@ object JournalServiceTest : Spek({
 
             runBlocking {
                 val opprettetJournalpostId =
-                    journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, "1", loggingMeta)
+                    journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, loggingMeta)
 
                 opprettetJournalpostId shouldBeEqualTo journalpostId
                 coVerify { dokArkivClient.createJournalpost(match { it.dokumenter.size == 2 }, any()) }

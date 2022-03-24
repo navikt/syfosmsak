@@ -3,7 +3,6 @@ package no.nav.syfo.service
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.DokArkivClient
 import no.nav.syfo.client.PdfgenClient
-import no.nav.syfo.client.SakClient
 import no.nav.syfo.client.createJournalpostPayload
 import no.nav.syfo.client.createPdfPayload
 import no.nav.syfo.log
@@ -22,7 +21,6 @@ import org.apache.kafka.clients.producer.ProducerRecord
 class JournalService(
     private val journalCreatedTopic: String,
     private val producer: KafkaProducer<String, JournalKafkaMessage>,
-    private val sakClient: SakClient,
     private val dokArkivClient: DokArkivClient,
     private val pdfgenClient: PdfgenClient,
     private val pdlPersonService: PdlPersonService,
@@ -31,11 +29,9 @@ class JournalService(
     suspend fun onJournalRequest(receivedSykmelding: ReceivedSykmelding, validationResult: ValidationResult, loggingMeta: LoggingMeta) {
         wrapExceptions(loggingMeta) {
             log.info("Mottok en sykmelding, prover å lagre i Joark {}", StructuredArguments.fields(loggingMeta))
-            val sak = sakClient.findOrCreateSak(receivedSykmelding.sykmelding.pasientAktoerId, receivedSykmelding.msgId, loggingMeta)
-            val sakid = sak.id.toString()
 
-            val journalpostid = opprettEllerFinnPDFJournalpost(receivedSykmelding, validationResult, sakid, loggingMeta)
-            val registerJournal = getKafkaMessage(receivedSykmelding, sakid, journalpostid)
+            val journalpostid = opprettEllerFinnPDFJournalpost(receivedSykmelding, validationResult, loggingMeta)
+            val registerJournal = getKafkaMessage(receivedSykmelding, journalpostid)
 
             try {
                 producer.send(ProducerRecord(journalCreatedTopic, receivedSykmelding.sykmelding.id, registerJournal)).get()
@@ -55,7 +51,7 @@ class JournalService(
         }
     }
 
-    suspend fun opprettEllerFinnPDFJournalpost(receivedSykmelding: ReceivedSykmelding, validationResult: ValidationResult, sakid: String, loggingMeta: LoggingMeta): String {
+    suspend fun opprettEllerFinnPDFJournalpost(receivedSykmelding: ReceivedSykmelding, validationResult: ValidationResult, loggingMeta: LoggingMeta): String {
         return if (skalOpprettePdf(receivedSykmelding.sykmelding.avsenderSystem)) {
             val vedleggListe: List<Vedlegg> = if (receivedSykmelding.vedlegg.isNullOrEmpty()) {
                 emptyList()
@@ -71,7 +67,7 @@ class JournalService(
             val pdf = pdfgenClient.createPdf(pdfPayload)
             log.info("PDF generert {}", StructuredArguments.fields(loggingMeta))
 
-            val journalpostPayload = createJournalpostPayload(receivedSykmelding, sakid, pdf, validationResult, vedleggListe)
+            val journalpostPayload = createJournalpostPayload(receivedSykmelding, pdf, validationResult, vedleggListe)
             val journalpost = dokArkivClient.createJournalpost(journalpostPayload, loggingMeta)
 
             journalpost.journalpostId
@@ -87,12 +83,10 @@ class JournalService(
 
     fun getKafkaMessage(
         receivedSykmelding: ReceivedSykmelding,
-        sakid: String,
         journalpostid: String
     ): JournalKafkaMessage = JournalKafkaMessage(
         journalpostKilde = "AS36",
         messageId = receivedSykmelding.msgId,
-        sakId = sakid,
         journalpostId = journalpostid
     )
 }

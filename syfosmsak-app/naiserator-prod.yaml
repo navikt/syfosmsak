@@ -54,7 +54,5 @@ spec:
       value: https://pdl-api.nais.adeo.no/graphql
     - name: PDL_SCOPE
       value: api://prod-fss.pdl.pdl-api/.default
-    - name: OPPRETT_SAK_URL
-      value: https://sak.intern.nav.no/api/v1/saker
     - name: SYKMELDING_VEDLEGG_BUCKET_NAME
       value: teamsykmelding-sykmelding-vedlegg-bucket-prod
