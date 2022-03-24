@@ -69,7 +69,6 @@ class DokArkivClient(
 
 fun createJournalpostPayload(
     receivedSykmelding: ReceivedSykmelding,
-    caseId: String,
     pdf: ByteArray,
     validationResult: ValidationResult,
     vedlegg: List<Vedlegg>
@@ -94,8 +93,7 @@ fun createJournalpostPayload(
     journalpostType = "INNGAAENDE",
     kanal = "HELSENETTET",
     sak = Sak(
-        arkivsaksnummer = caseId,
-        arkivsaksystem = "GSAK"
+        sakstype = "GENERELL_SAK"
     ),
     tema = "SYM",
     tittel = createTittleJournalpost(validationResult, receivedSykmelding)

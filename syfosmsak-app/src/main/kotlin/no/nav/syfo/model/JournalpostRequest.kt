@@ -49,6 +49,5 @@ data class Dokumentvarianter(
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class Sak(
-    val arkivsaksnummer: String? = null,
-    val arkivsaksystem: String? = null
+    val sakstype: String? = null
 )

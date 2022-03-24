@@ -34,7 +34,6 @@ import no.nav.syfo.application.exception.ServiceUnavailableException
 import no.nav.syfo.client.AccessTokenClientV2
 import no.nav.syfo.client.DokArkivClient
 import no.nav.syfo.client.PdfgenClient
-import no.nav.syfo.client.SakClient
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toConsumerConfig
@@ -118,7 +117,6 @@ fun main() {
     val httpClientWithProxy = HttpClient(Apache, proxyConfig)
 
     val stsClient = StsOidcClient(credentials.serviceuserUsername, credentials.serviceuserPassword, env.securityTokenServiceURL)
-    val sakClient = SakClient(env.opprettSakUrl, stsClient, httpClient)
     val dokArkivClient = DokArkivClient(env.dokArkivUrl, stsClient, httpClient)
     val pdfgenClient = PdfgenClient(env.pdfgen, httpClient)
 
@@ -130,7 +128,7 @@ fun main() {
     val bucketService = BucketService(env.sykmeldingVedleggBucketName, sykmeldingVedleggStorage)
 
     val aivenProducer = KafkaProducer<String, JournalKafkaMessage>(KafkaUtils.getAivenKafkaConfig().toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class))
-    val journalAivenService = JournalService(env.oppgaveJournalOpprettet, aivenProducer, sakClient, dokArkivClient, pdfgenClient, pdlPersonService, bucketService)
+    val journalAivenService = JournalService(env.oppgaveJournalOpprettet, aivenProducer, dokArkivClient, pdfgenClient, pdlPersonService, bucketService)
     applicationState.ready = true
 
     launchListeners(env, applicationState, journalAivenService)
