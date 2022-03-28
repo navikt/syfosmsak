@@ -6,7 +6,6 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.6.0"
-val jacksonVersion = "2.13.2"
 val kafkaVersion = "2.8.0"
 val kluentVersion = "1.68"
 val ktorVersion = "1.6.8"
@@ -65,14 +64,11 @@ subprojects {
         implementation("io.ktor:ktor-client-jackson:$ktorVersion")
         implementation("io.ktor:ktor-jackson:$ktorVersion")
 
-        implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-
         implementation("ch.qos.logback:logback-classic:$logbackVersion")
         implementation("net.logstash.logback:logstash-logback-encoder:$logstashLogbackEncoder")
 
         implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
         implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
-        implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
         implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
         implementation("no.nav.helse:syfosm-common-diagnosis-codes:$smCommonVersion")
 
