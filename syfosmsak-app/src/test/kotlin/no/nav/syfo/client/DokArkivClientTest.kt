@@ -32,7 +32,7 @@ import java.net.ServerSocket
 import java.util.concurrent.TimeUnit
 
 object DokArkivClientTest : Spek({
-    val stsOidcClient = mockk<StsOidcClient>()
+    val accessTokenClientV2 = mockk<AccessTokenClientV2>()
     val httpClient = HttpClient(Apache) {
         install(JsonFeature) {
             serializer = JacksonSerializer {
@@ -73,7 +73,7 @@ object DokArkivClientTest : Spek({
         }
     }.start()
 
-    val dokArkivClient = DokArkivClient("$mockHttpServerUrl/dokarkiv", stsOidcClient, httpClient)
+    val dokArkivClient = DokArkivClient("$mockHttpServerUrl/dokarkiv", accessTokenClientV2, "scope", httpClient)
 
     afterGroup {
         mockServer.stop(TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(1))
@@ -83,7 +83,7 @@ object DokArkivClientTest : Spek({
         it("Happy-case") {
             var jpResponse: JournalpostResponse? = null
             runBlocking {
-                coEvery { stsOidcClient.oidcToken() } returns OidcToken("Token", "JWT", 1L)
+                coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "Token"
                 jpResponse = dokArkivClient.createJournalpost(
                     JournalpostRequest(
                         dokumenter = emptyList(),
@@ -98,7 +98,7 @@ object DokArkivClientTest : Spek({
         it("Feiler ikke ved duplikat") {
             var jpResponse: JournalpostResponse? = null
             runBlocking {
-                coEvery { stsOidcClient.oidcToken() } returns OidcToken("Token", "JWT", 1L)
+                coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "Token"
                 jpResponse = dokArkivClient.createJournalpost(
                     JournalpostRequest(
                         dokumenter = emptyList(),
