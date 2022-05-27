@@ -1,11 +1,11 @@
 package no.nav.syfo.client
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.receive
+import io.ktor.client.call.body
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
-import io.ktor.client.statement.HttpStatement
+import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
@@ -49,15 +49,15 @@ class DokArkivClient(
                 "Kall til dokarkiv Nav-Callid {}, {}", journalpostRequest.eksternReferanseId,
                 fields(loggingMeta)
             )
-            val httpResponse = httpClient.post<HttpStatement>(url) {
+            val httpResponse = httpClient.post(url) {
                 contentType(ContentType.Application.Json)
                 header("Authorization", "Bearer ${accessTokenClientV2.getAccessTokenV2(scope)}")
                 header("Nav-Callid", journalpostRequest.eksternReferanseId)
-                body = journalpostRequest
+                setBody(journalpostRequest)
                 parameter("forsoekFerdigstill", true)
-            }.execute()
+            }
             if (httpResponse.status == HttpStatusCode.Created || httpResponse.status == HttpStatusCode.Conflict) {
-                httpResponse.call.response.receive<JournalpostResponse>()
+                httpResponse.call.response.body()
             } else {
                 log.error("Mottok uventet statuskode fra dokarkiv: {}, {}", httpResponse.status, fields(loggingMeta))
                 throw RuntimeException("Mottok uventet statuskode fra dokarkiv: ${httpResponse.status}")

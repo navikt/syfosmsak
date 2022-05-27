@@ -46,10 +46,10 @@ fun main() {
         applicationState
     )
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
-    applicationServer.start()
-    applicationState.ready = true
 
     startKafkaAivenStream(env, applicationState)
+
+    applicationServer.start()
 }
 
 fun startKafkaAivenStream(env: Environment, applicationState: ApplicationState) {
@@ -76,7 +76,7 @@ fun startKafkaAivenStream(env: Environment, applicationState: ApplicationState) 
         !(value?.let { objectMapper.readValue<ValidationResult>(value).ruleHits.any { it.ruleName == "UNDER_BEHANDLING" } } ?: false)
     }
 
-    val joinWindow = JoinWindows.of(Duration.ofDays(14))
+    val joinWindow = JoinWindows.ofTimeDifferenceWithNoGrace(Duration.ofDays(14))
 
     inputStream.join(
         behandlingsutfallStream,
