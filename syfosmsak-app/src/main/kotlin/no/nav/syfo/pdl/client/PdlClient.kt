@@ -1,8 +1,10 @@
 package no.nav.syfo.pdl.client
 
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.request.header
 import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.http.HttpHeaders
 import no.nav.syfo.pdl.client.model.GetPersonRequest
 import no.nav.syfo.pdl.client.model.GetPersonResponse
@@ -23,10 +25,10 @@ class PdlClient(
 
     private suspend inline fun <reified R> getGraphQLRespnse(graphQlBody: Any, accessToken: String): R {
         return httpClient.post(basePath) {
-            body = graphQlBody
+            setBody(graphQlBody)
             header(HttpHeaders.Authorization, "Bearer $accessToken")
             header(temaHeader, tema)
             header(HttpHeaders.ContentType, "application/json")
-        }
+        }.body()
     }
 }

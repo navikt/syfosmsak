@@ -1,9 +1,9 @@
 package no.nav.syfo.client
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.receive
+import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.client.statement.HttpStatement
+import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -20,13 +20,13 @@ class PdfgenClient constructor(
     private val httpClient: HttpClient
 ) {
     suspend fun createPdf(payload: PdfPayload): ByteArray {
-        val httpResponse = httpClient.get<HttpStatement>(url) {
+        val httpResponse = httpClient.get(url) {
             contentType(ContentType.Application.Json)
             method = HttpMethod.Post
-            body = payload
-        }.execute()
+            setBody(payload)
+        }
         if (httpResponse.status == HttpStatusCode.OK) {
-            return httpResponse.call.response.receive<ByteArray>()
+            return httpResponse.call.response.body()
         } else {
             log.error("Mottok feilkode fra syfopdfgen: {}", httpResponse.status)
             throw RuntimeException("Mottok feilkode fra syfopdfgen: ${httpResponse.status}")

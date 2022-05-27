@@ -6,26 +6,26 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.6.0"
+val jacksonVersion = "2.13.3"
 val kafkaVersion = "2.8.0"
 val kluentVersion = "1.68"
-val ktorVersion = "1.6.8"
+val ktorVersion = "2.0.1"
 val logstashLogbackEncoder = "7.0.1"
 val logbackVersion = "1.2.11"
 val prometheusVersion = "0.15.0"
-val smCommonVersion = "1.ed38c78"
+val smCommonVersion = "1.f132f2b"
 val spekVersion = "2.0.17"
 val junitPlatformLauncher = "1.8.2"
 val ioMockVersion = "1.12.3"
-val kotlinVersion = "1.6.0"
+val kotlinVersion = "1.6.21"
 val pdfboxVersion = "2.0.24"
 val googleCloudStorageVersion = "2.3.0"
 
 plugins {
-    java
-    kotlin("jvm") version "1.6.0"
-    id("org.jmailen.kotlinter") version "3.6.0"
-    id("com.diffplug.spotless") version "5.16.0"
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    kotlin("jvm") version "1.6.21"
+    id("org.jmailen.kotlinter") version "3.10.0"
+    id("com.diffplug.spotless") version "6.5.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 val githubUser: String by project
@@ -57,12 +57,17 @@ subprojects {
         implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
         implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
+        implementation("io.ktor:ktor-server-core:$ktorVersion")
         implementation("io.ktor:ktor-server-netty:$ktorVersion")
+        implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+        implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
+        implementation("io.ktor:ktor-server-call-id:$ktorVersion")
+        implementation("io.ktor:ktor-client-core:$ktorVersion")
         implementation("io.ktor:ktor-client-apache:$ktorVersion")
-        implementation("io.ktor:ktor-client-json:$ktorVersion")
-        implementation("io.ktor:ktor-client-auth-basic:$ktorVersion")
-        implementation("io.ktor:ktor-client-jackson:$ktorVersion")
-        implementation("io.ktor:ktor-jackson:$ktorVersion")
+        implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+        implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+
+        implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 
         implementation("ch.qos.logback:logback-classic:$logbackVersion")
         implementation("net.logstash.logback:logstash-logback-encoder:$logstashLogbackEncoder")
