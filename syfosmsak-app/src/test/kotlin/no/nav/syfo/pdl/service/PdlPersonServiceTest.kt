@@ -1,5 +1,6 @@
 package no.nav.syfo.pdl.service
 
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -16,34 +17,30 @@ import no.nav.syfo.pdl.client.model.ResponseData
 import no.nav.syfo.pdl.getPdlResponse
 import no.nav.syfo.util.LoggingMeta
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import kotlin.test.assertFailsWith
 
-object PdlPersonServiceTest : Spek({
+class PdlPersonServiceTest : FunSpec({
     val pdlClient = mockk<PdlClient>()
     val accessTokenClient = mockkClass(AccessTokenClientV2::class)
     val pdlService = PdlPersonService(pdlClient, accessTokenClient, "pdlscope")
     val loggingMeta = LoggingMeta("mottakId", "orgNr", "msgId", "sykmeldingId")
 
-    beforeEachTest {
+    beforeTest {
         clearAllMocks()
     }
 
-    describe("PdlService") {
-        it("Hent person fra pdl uten fortrolig adresse") {
+    context("PdlService") {
+        test("Hent person fra pdl uten fortrolig adresse") {
             coEvery { pdlClient.getPerson(any(), any()) } returns getPdlResponse()
             coEvery { accessTokenClient.getAccessTokenV2(any()) } returns "token"
 
-            runBlocking {
-                val person = pdlService.getPdlPerson("01245678901", loggingMeta)
-                person.navn.fornavn shouldBeEqualTo "fornavn"
-                person.navn.mellomnavn shouldBeEqualTo null
-                person.navn.etternavn shouldBeEqualTo "etternavn"
-                person.aktorId shouldBeEqualTo "987654321"
-            }
+            val person = pdlService.getPdlPerson("01245678901", loggingMeta)
+            person.navn.fornavn shouldBeEqualTo "fornavn"
+            person.navn.mellomnavn shouldBeEqualTo null
+            person.navn.etternavn shouldBeEqualTo "etternavn"
+            person.aktorId shouldBeEqualTo "987654321"
         }
-        it("Skal feile når person ikke finnes") {
+        test("Skal feile når person ikke finnes") {
             coEvery { pdlClient.getPerson(any(), any()) } returns GetPersonResponse(ResponseData(null, null), errors = null)
 
             assertFailsWith<RuntimeException> {
@@ -52,7 +49,7 @@ object PdlPersonServiceTest : Spek({
                 }
             }
         }
-        it("Skal feile når navn er tom liste") {
+        test("Skal feile når navn er tom liste") {
             coEvery { pdlClient.getPerson(any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     hentPerson = HentPerson(
@@ -69,7 +66,7 @@ object PdlPersonServiceTest : Spek({
                 }
             }
         }
-        it("Skal feile når navn ikke finnes") {
+        test("Skal feile når navn ikke finnes") {
             coEvery { pdlClient.getPerson(any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     hentPerson = HentPerson(
@@ -86,7 +83,7 @@ object PdlPersonServiceTest : Spek({
                 }
             }
         }
-        it("Skal feile når identer ikke finnes") {
+        test("Skal feile når identer ikke finnes") {
             coEvery { pdlClient.getPerson(any(), any()) } returns GetPersonResponse(
                 ResponseData(
                     hentPerson = HentPerson(

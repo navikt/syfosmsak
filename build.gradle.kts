@@ -5,18 +5,17 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.6.0"
+val coroutinesVersion = "1.6.1"
 val jacksonVersion = "2.13.3"
 val kafkaVersion = "2.8.0"
 val kluentVersion = "1.68"
 val ktorVersion = "2.0.1"
-val logstashLogbackEncoder = "7.0.1"
+val logstashLogbackEncoder = "7.1.1"
 val logbackVersion = "1.2.11"
 val prometheusVersion = "0.15.0"
 val smCommonVersion = "1.f132f2b"
-val spekVersion = "2.0.17"
-val junitPlatformLauncher = "1.8.2"
-val ioMockVersion = "1.12.3"
+val kotestVersion = "5.3.0"
+val ioMockVersion = "1.12.4"
 val kotlinVersion = "1.6.21"
 val pdfboxVersion = "2.0.24"
 val googleCloudStorageVersion = "2.3.0"
@@ -82,14 +81,9 @@ subprojects {
 
         testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
         testImplementation("org.amshove.kluent:kluent:$kluentVersion")
-        testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")
+        testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
         testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
         testImplementation("io.mockk:mockk:$ioMockVersion")
-
-        testImplementation("org.junit.platform:junit-platform-launcher:$junitPlatformLauncher")
-        testRuntimeOnly("org.spekframework.spek2:spek-runtime-jvm:$spekVersion")
-        testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion")
-
     }
     tasks {
         withType<Jar> {
@@ -111,7 +105,6 @@ subprojects {
 
         withType<Test> {
             useJUnitPlatform {
-                includeEngines("spek2")
             }
             testLogging.showStandardStreams = true
         }

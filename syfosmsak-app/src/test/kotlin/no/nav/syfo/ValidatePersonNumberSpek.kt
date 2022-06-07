@@ -1,23 +1,22 @@
 package no.nav.syfo
 
+import io.kotest.core.spec.style.FunSpec
 import no.nav.syfo.validation.validatePersonAndDNumber
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 val personNumberDateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("ddMMyy")
 
-object ValidateDNumberSpek : Spek({
-    describe("Testing validation personNumber") {
-        it("Should check validate as fnr") {
+class ValidateDNumberSpek : FunSpec({
+    context("Testing validation personNumber") {
+        test("Should check validate as fnr") {
             val generateFnr = generatePersonNumber(LocalDate.of(1991, 1, 1), false)
             val validFnr = validatePersonAndDNumber(generateFnr)
             validFnr shouldBeEqualTo true
         }
 
-        it("Should check validate as d-number") {
+        test("Should check validate as d-number") {
             val generateDnumber = generatePersonNumber(LocalDate.of(1991, 1, 1), true)
             val validdnumber = validatePersonAndDNumber(generateDnumber)
             validdnumber shouldBeEqualTo true

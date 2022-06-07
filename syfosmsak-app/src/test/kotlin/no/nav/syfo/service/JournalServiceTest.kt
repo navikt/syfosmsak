@@ -1,11 +1,11 @@
 package no.nav.syfo.service
 
+import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.time.delay
 import kotlinx.coroutines.withTimeout
 import no.nav.syfo.application.ApplicationState
@@ -28,13 +28,11 @@ import no.nav.syfo.pdl.service.PdlPersonService
 import no.nav.syfo.util.LoggingMeta
 import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.producer.KafkaProducer
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.Duration
 import java.time.LocalDateTime
 
 @DelicateCoroutinesApi
-object JournalServiceTest : Spek({
+class JournalServiceTest : FunSpec({
     val producer = mockk<KafkaProducer<String, JournalKafkaMessage>>(relaxed = true)
     val dokArkivClient = mockk<DokArkivClient>()
     val pdfgenClient = mockk<PdfgenClient>()
@@ -47,82 +45,73 @@ object JournalServiceTest : Spek({
     val journalpostId = "1234"
     val journalpostIdPapirsykmelding = "5555"
 
-    beforeEachTest {
+    beforeTest {
         clearMocks(dokArkivClient)
         coEvery { pdlPersonService.getPdlPerson(any(), any()) } returns PdlPerson(Navn("fornavn", null, "etternavn"), "fnr", "aktørid", null)
         coEvery { pdfgenClient.createPdf(any()) } returns "PDF".toByteArray(Charsets.UTF_8)
         coEvery { dokArkivClient.createJournalpost(any(), any()) } returns JournalpostResponse(dokumenter = emptyList(), journalpostId = journalpostId, journalpostferdigstilt = true)
     }
 
-    describe("JournalService - opprettEllerFinnPDFJournalpost") {
+    context("JournalService - opprettEllerFinnPDFJournalpost") {
 
-        it("test timeout") {
+        test("test timeout") {
             val applicationState = ApplicationState(true, true)
             coEvery { pdfgenClient.createPdf(any()) } coAnswers {
                 delay(Duration.ofMillis(10))
                 "PDF".toByteArray(Charsets.UTF_8)
             }
-            runBlocking {
-                val job = createListener(applicationState) {
-                    withTimeout(5) {
-                        val sykmelding = generateReceivedSykmelding(
-                            generateSykmelding(
-                                avsenderSystem = AvsenderSystem(
-                                    "EPJ-systemet",
-                                    "1"
-                                )
+            val job = createListener(applicationState) {
+                withTimeout(5) {
+                    val sykmelding = generateReceivedSykmelding(
+                        generateSykmelding(
+                            avsenderSystem = AvsenderSystem(
+                                "EPJ-systemet",
+                                "1"
                             )
                         )
-                        journalService.onJournalRequest(sykmelding, validationResult, loggingMeta)
-                    }
+                    )
+                    journalService.onJournalRequest(sykmelding, validationResult, loggingMeta)
                 }
-                job.join()
             }
+            job.join()
+
             applicationState.alive shouldBeEqualTo false
             applicationState.ready shouldBeEqualTo false
         }
 
-        it("Oppretter PDF hvis sykmeldingen ikke er en papirsykmelding") {
+        test("Oppretter PDF hvis sykmeldingen ikke er en papirsykmelding") {
             val sykmelding = generateReceivedSykmelding(generateSykmelding(avsenderSystem = AvsenderSystem("EPJ-systemet", "1")))
 
-            runBlocking {
-                val opprettetJournalpostId =
-                    journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, loggingMeta)
+            val opprettetJournalpostId =
+                journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, loggingMeta)
 
-                opprettetJournalpostId shouldBeEqualTo journalpostId
-            }
+            opprettetJournalpostId shouldBeEqualTo journalpostId
         }
-        it("Oppretter PDF hvis sykmeldingen er en papirsykmelding og journalpostid ikke er satt som versjonsnummer") {
+        test("Oppretter PDF hvis sykmeldingen er en papirsykmelding og journalpostid ikke er satt som versjonsnummer") {
             val sykmelding = generateReceivedSykmelding(generateSykmelding(avsenderSystem = AvsenderSystem("Papirsykmelding", "1")))
 
-            runBlocking {
-                val opprettetJournalpostId =
-                    journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, loggingMeta)
+            val opprettetJournalpostId =
+                journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, loggingMeta)
 
-                opprettetJournalpostId shouldBeEqualTo journalpostId
-            }
+            opprettetJournalpostId shouldBeEqualTo journalpostId
         }
-        it("Oppretter ikke PDF hvis sykmeldingen er en papirsykmelding og versjonsnummer er journalpostid") {
+        test("Oppretter ikke PDF hvis sykmeldingen er en papirsykmelding og versjonsnummer er journalpostid") {
             val sykmelding = generateReceivedSykmelding(generateSykmelding(avsenderSystem = AvsenderSystem("Papirsykmelding", journalpostIdPapirsykmelding)))
 
-            runBlocking {
-                val opprettetJournalpostId =
-                    journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, loggingMeta)
+            val opprettetJournalpostId =
+                journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, loggingMeta)
 
-                opprettetJournalpostId shouldBeEqualTo journalpostIdPapirsykmelding
-            }
+            opprettetJournalpostId shouldBeEqualTo journalpostIdPapirsykmelding
         }
-        it("Journalfører vedlegg hvis sykmelding inneholder vedlegg") {
+        test("Journalfører vedlegg hvis sykmelding inneholder vedlegg") {
             coEvery { bucketService.getVedleggFromBucket(any(), any()) } returns Vedlegg(Content("Base64Container", "base64"), "application/pdf", "vedlegg2.pdf")
             val sykmelding = generateReceivedSykmelding(generateSykmelding()).copy(vedlegg = listOf("vedleggsid1"))
 
-            runBlocking {
-                val opprettetJournalpostId =
-                    journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, loggingMeta)
+            val opprettetJournalpostId =
+                journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, loggingMeta)
 
-                opprettetJournalpostId shouldBeEqualTo journalpostId
-                coVerify { dokArkivClient.createJournalpost(match { it.dokumenter.size == 2 }, any()) }
-            }
+            opprettetJournalpostId shouldBeEqualTo journalpostId
+            coVerify { dokArkivClient.createJournalpost(match { it.dokumenter.size == 2 }, any()) }
         }
     }
 })
