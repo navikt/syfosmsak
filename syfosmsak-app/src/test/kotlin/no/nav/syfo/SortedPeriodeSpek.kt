@@ -1,5 +1,6 @@
 package no.nav.syfo
 
+import io.kotest.core.spec.style.FunSpec
 import no.nav.syfo.client.createTittleJournalpost
 import no.nav.syfo.client.sortedSykmeldingPeriodeFOMDate
 import no.nav.syfo.client.sortedSykmeldingPeriodeTOMDate
@@ -8,12 +9,10 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import org.amshove.kluent.shouldBeEqualTo
-import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-object SortedPeriodeSpek : Spek({
+class SortedPeriodeSpek : FunSpec({
 
     fun getReceivedSykemelding(perioder: List<Periode> = listOf(generatePeriode())): ReceivedSykmelding {
         return ReceivedSykmelding(
@@ -39,9 +38,9 @@ object SortedPeriodeSpek : Spek({
         )
     }
 
-    describe("Testing sorting the fom and tom of a periode") {
+    context("Testing sorting the fom and tom of a periode") {
 
-        it("Should choose the correct fom and tom with one Periode") {
+        test("Should choose the correct fom and tom with one Periode") {
 
             val periode = generatePeriode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.of(2019, 1, 2))
             val receivedSykmelding = getReceivedSykemelding(listOf(periode))
@@ -56,7 +55,7 @@ object SortedPeriodeSpek : Spek({
             )
         }
 
-        it("Should choose the correct fom and tom with one Periode") {
+        test("Should choose the correct fom and tom with one Periode") {
 
             val periode = generatePeriode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.of(2019, 1, 2))
             val periode2 = generatePeriode(fom = LocalDate.of(2019, 1, 3), tom = LocalDate.of(2019, 1, 9))
@@ -73,7 +72,7 @@ object SortedPeriodeSpek : Spek({
             )
         }
 
-        it("Should get correct title for sykemelding with one Periode") {
+        test("Should get correct title for sykemelding with one Periode") {
             val periode = generatePeriode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.of(2019, 1, 2))
             val receivedSykmelding = getReceivedSykemelding(listOf(periode))
 
@@ -81,7 +80,7 @@ object SortedPeriodeSpek : Spek({
             title shouldBeEqualTo "Sykmelding 01.01.2019 - 02.01.2019"
         }
 
-        it("Should get correct title for sykemelding with two Periode") {
+        test("Should get correct title for sykemelding with two Periode") {
             val periode = generatePeriode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.of(2019, 1, 2))
             val periode2 = generatePeriode(fom = LocalDate.of(2019, 1, 3), tom = LocalDate.of(2019, 1, 4))
             val receivedSykmelding = getReceivedSykemelding(listOf(periode2, periode))
@@ -90,7 +89,7 @@ object SortedPeriodeSpek : Spek({
             title shouldBeEqualTo "Sykmelding 01.01.2019 - 04.01.2019"
         }
 
-        it("Should get correct title for sykemelding with one gradert") {
+        test("Should get correct title for sykemelding with one gradert") {
             val periode = generatePeriode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.of(2019, 1, 2))
             val periode2 = generatePeriode(
                 fom = LocalDate.of(2019, 1, 3),
@@ -103,7 +102,7 @@ object SortedPeriodeSpek : Spek({
             title shouldBeEqualTo "Sykmelding 01.01.2019 - 04.01.2019"
         }
 
-        it("Should get correct title for Sykemelding with several Perioder") {
+        test("Should get correct title for Sykemelding with several Perioder") {
             val periode = generatePeriode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.of(2019, 1, 2))
             val periode2 = generatePeriode(
                 fom = LocalDate.of(2019, 1, 3),
@@ -117,7 +116,7 @@ object SortedPeriodeSpek : Spek({
             title shouldBeEqualTo "Sykmelding 01.01.2019 - 01.02.2019"
         }
 
-        it("Should get Avvist Sykemelding with correct fom and tom") {
+        test("Should get Avvist Sykemelding with correct fom and tom") {
             val periode = generatePeriode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.of(2019, 1, 2))
             val periode2 = generatePeriode(
                 fom = LocalDate.of(2019, 1, 3),
