@@ -40,7 +40,7 @@ spec:
   vault:
     enabled: false
   filesFrom:
-    - secret: syfosmsak-sykmelding-google-creds
+    - secret: sykmeldingvedlegg-google-creds
   kafka:
     pool: nav-dev
   webproxy: false
