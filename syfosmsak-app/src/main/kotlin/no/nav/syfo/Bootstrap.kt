@@ -106,7 +106,7 @@ fun main() {
 
     val pdlPersonService = PdlFactory.getPdlService(env, httpClient, accessTokenClientV2, env.pdlScope)
 
-    val sykmeldingVedleggStorageCredentials: Credentials = GoogleCredentials.fromStream(FileInputStream("/var/run/secrets/sykmeldingvedlegg-google-creds/sykmeldingvedlegg-google-creds.json"))
+    val sykmeldingVedleggStorageCredentials: Credentials = GoogleCredentials.fromStream(FileInputStream("/var/run/secrets/sykmeldingvedlegg-google-creds.json"))
     val sykmeldingVedleggStorage: Storage = StorageOptions.newBuilder().setCredentials(sykmeldingVedleggStorageCredentials).build().service
     val bucketService = BucketService(env.sykmeldingVedleggBucketName, sykmeldingVedleggStorage)
 
