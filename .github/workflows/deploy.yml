@@ -89,11 +89,11 @@ jobs:
         uses: nais/deploy/actions/deploy@master
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY_TEAMSYKMELDING }}
-          CLUSTER: dev-fss
+          CLUSTER: dev-gcp
           RESOURCE: syfosmsak-app/naiserator-dev.yaml
       - name: Deploy to Prod
         uses: nais/deploy/actions/deploy@master
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY_TEAMSYKMELDING }}
-          CLUSTER: prod-fss
+          CLUSTER: prod-gcp
           RESOURCE: syfosmsak-app/naiserator-prod.yaml

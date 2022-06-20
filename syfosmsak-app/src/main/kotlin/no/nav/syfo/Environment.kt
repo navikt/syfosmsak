@@ -9,7 +9,7 @@ data class Environment(
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "syfosmsak"),
     val dokArkivUrl: String = getEnvVar("DOK_ARKIV_URL"),
     val dokArkivScope: String = getEnvVar("DOK_ARKIV_SCOPE"),
-    val pdfgen: String = getEnvVar("PDF_GEN_URL", "http://syfopdfgen.teamsykmelding/api/v1/genpdf/syfosm/syfosm"),
+    val pdfgen: String = getEnvVar("PDF_GEN_URL"),
     val pdlGraphqlPath: String = getEnvVar("PDL_GRAPHQL_PATH"),
     val aadAccessTokenV2Url: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
     val clientIdV2: String = getEnvVar("AZURE_APP_CLIENT_ID"),

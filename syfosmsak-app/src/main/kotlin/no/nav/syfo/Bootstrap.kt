@@ -47,7 +47,6 @@ import no.nav.syfo.util.JacksonKafkaSerializer
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.TrackableException
 import no.nav.syfo.util.Unbounded
-import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -55,7 +54,6 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.FileInputStream
-import java.net.ProxySelector
 import java.time.Duration
 
 data class BehandlingsUtfallReceivedSykmelding(val receivedSykmelding: ByteArray, val behandlingsUtfall: ByteArray)
@@ -100,25 +98,15 @@ fun main() {
         }
     }
 
-    val proxyConfig: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-        config()
-        engine {
-            customizeClient {
-                setRoutePlanner(SystemDefaultRoutePlanner(ProxySelector.getDefault()))
-            }
-        }
-    }
-
     val httpClient = HttpClient(Apache, config)
-    val httpClientWithProxy = HttpClient(Apache, proxyConfig)
 
-    val accessTokenClientV2 = AccessTokenClientV2(env.aadAccessTokenV2Url, env.clientIdV2, env.clientSecretV2, httpClientWithProxy)
+    val accessTokenClientV2 = AccessTokenClientV2(env.aadAccessTokenV2Url, env.clientIdV2, env.clientSecretV2, httpClient)
     val dokArkivClient = DokArkivClient(env.dokArkivUrl, accessTokenClientV2, env.dokArkivScope, httpClient)
     val pdfgenClient = PdfgenClient(env.pdfgen, httpClient)
 
     val pdlPersonService = PdlFactory.getPdlService(env, httpClient, accessTokenClientV2, env.pdlScope)
 
-    val sykmeldingVedleggStorageCredentials: Credentials = GoogleCredentials.fromStream(FileInputStream("/var/run/secrets/nais.io/vault/sykmelding-google-creds.json"))
+    val sykmeldingVedleggStorageCredentials: Credentials = GoogleCredentials.fromStream(FileInputStream("/var/run/secrets/sykmeldingvedlegg-google-creds.json"))
     val sykmeldingVedleggStorage: Storage = StorageOptions.newBuilder().setCredentials(sykmeldingVedleggStorageCredentials).build().service
     val bucketService = BucketService(env.sykmeldingVedleggBucketName, sykmeldingVedleggStorage)
 
