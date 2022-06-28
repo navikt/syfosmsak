@@ -149,8 +149,8 @@
   "tiltakNAV": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
   "andreTiltak": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
   "meldingTilNAV": {
-    "bistandUmiddelbart": false,
-    "beskrivBistand": null
+    "bistandUmiddelbart": true,
+    "beskrivBistand": "Fin melding"
   },
   "meldingTilArbeidsgiver": "Dette er en testsetning som ikke er skrevet av en lege",
   "kontaktMedPasient": {
