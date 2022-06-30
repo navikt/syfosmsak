@@ -8,7 +8,8 @@ data class PdfPayload(
     val validationResult: ValidationResult,
     val mottattDato: LocalDateTime,
     val behandlerKontorOrgName: String,
-    val merknader: List<Merknad>?
+    val merknader: List<Merknad>?,
+    val rulesetVersion: String?
 )
 
 data class Pasient(

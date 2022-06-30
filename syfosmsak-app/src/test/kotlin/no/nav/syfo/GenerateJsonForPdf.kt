@@ -10,7 +10,6 @@ import no.nav.syfo.model.Sykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.pdl.model.Navn
 import no.nav.syfo.pdl.model.PdlPerson
-import no.nav.syfo.sm.Diagnosekoder.objectMapper
 import java.time.LocalDateTime
 
 fun main() {
