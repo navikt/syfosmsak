@@ -126,7 +126,7 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
         } catch (e: TrackableException) {
             log.error("En uhåndtert feil oppstod, applikasjonen restarter {}", fields(e.loggingMeta), e.cause)
         } catch (ex: Exception) {
-            log.error("En uhåndtert feil oppstod, applikasjonen restarter", ex.cause)
+            log.error("En uhåndtert feil oppstod, applikasjonen restarter", ex)
         } finally {
             log.error("Setting ready and alive to false")
             applicationState.ready = false
