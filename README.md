@@ -58,3 +58,14 @@ To build locally and run the integration tests you can simply run `./gradlew sha
 
 #### Creating a docker image
 Creating a docker image should be as simple as `docker build -t syfosmsak .`
+
+### Upgrading the gradle wrapper
+Find the newest version of gradle here: https://gradle.org/releases/ Then run this command:
+
+```./gradlew wrapper --gradle-version $gradleVersjon```
+
+### Inquiries
+Questions related to the code or the project can be asked as issues here on GitHub
+
+### For NAV employees
+We are available at the Slack channel #team-sykmelding
