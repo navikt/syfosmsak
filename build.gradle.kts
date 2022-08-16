@@ -9,7 +9,7 @@ val coroutinesVersion = "1.6.4"
 val jacksonVersion = "2.13.3"
 val kafkaVersion = "2.8.0"
 val kluentVersion = "1.68"
-val ktorVersion = "2.0.3"
+val ktorVersion = "2.1.0"
 val logstashLogbackEncoder = "7.2"
 val logbackVersion = "1.2.11"
 val prometheusVersion = "0.16.0"
@@ -36,7 +36,6 @@ allprojects {
 
     repositories {
         mavenCentral()
-        maven(url = "https://packages.confluent.io/maven/")
         maven {
             url = uri("https://maven.pkg.github.com/navikt/syfosm-common")
             credentials {
