@@ -48,7 +48,7 @@ spec:
     - name: DOK_ARKIV_URL
       value: https://dokarkiv.dev.intern.nav.no/rest/journalpostapi/v1/journalpost
     - name: DOK_ARKIV_SCOPE
-      value: api://dev-gcp.teamdokumenthandtering.dokarkiv/.default
+      value: api://dev-fss.teamdokumenthandtering.dokarkiv/.default
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.dev-fss-pub.nais.io/graphql
     - name: PDL_SCOPE
