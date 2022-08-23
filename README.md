@@ -67,8 +67,11 @@ Find the newest version of gradle here: https://gradle.org/releases/ Then run th
 
 ```./gradlew wrapper --gradle-version $gradleVersjon```
 
-### Inquiries
-Questions related to the code or the project can be asked as issues here on GitHub
+### Contact
 
-### For NAV employees
-We are available at the Slack channel #team-sykmelding
+This project is maintained by navikt/teamsykmelding
+
+Questions and/or feature requests? Please create an [issue](https://github.com/navikt/macgyver/issues).
+
+If you work in [@navikt](https://github.com/navikt) you can reach us at the Slack
+channel [#team-sykmelding](https://nav-it.slack.com/archives/CMA3XV997).
