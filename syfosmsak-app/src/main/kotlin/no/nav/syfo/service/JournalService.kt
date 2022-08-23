@@ -31,6 +31,7 @@ class JournalService(
             log.info("Mottok en sykmelding, prover å lagre i Joark {}", StructuredArguments.fields(loggingMeta))
 
             val journalpostid = opprettEllerFinnPDFJournalpost(receivedSykmelding, validationResult, loggingMeta)
+            log.info("Found journalpostid $journalpostid {}", StructuredArguments.fields(loggingMeta))
             val registerJournal = getKafkaMessage(receivedSykmelding, journalpostid)
 
             try {
@@ -62,6 +63,7 @@ class JournalService(
                 }
             }
             val patient = pdlPersonService.getPdlPerson(receivedSykmelding.personNrPasient, loggingMeta)
+            log.info("Found patient {}", StructuredArguments.fields(loggingMeta))
             val pdfPayload = createPdfPayload(receivedSykmelding, validationResult, patient)
 
             val pdf = pdfgenClient.createPdf(pdfPayload)
