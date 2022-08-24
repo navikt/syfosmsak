@@ -46,9 +46,9 @@ spec:
   webproxy: false
   env:
     - name: DOK_ARKIV_URL
-      value: https://dokarkiv-q1.dev-fss-pub.nais.io/rest/journalpostapi/v1/journalpost
+      value: https://dokarkiv.dev-fss-pub.nais.io/rest/journalpostapi/v1/journalpost
     - name: DOK_ARKIV_SCOPE
-      value: api://dev-fss.teamdokumenthandtering.dokarkiv/.default
+      value: api://dev-fss.teamdokumenthandtering.dokarkiv-q1/.default
     - name: PDL_GRAPHQL_PATH
       value: https://pdl-api.dev-fss-pub.nais.io/graphql
     - name: PDL_SCOPE
