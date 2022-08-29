@@ -17,6 +17,9 @@ import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.wrapExceptions
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.slf4j.LoggerFactory
+
+private val sikkerlogg = LoggerFactory.getLogger("securelog")
 
 class JournalService(
     private val journalCreatedTopic: String,
@@ -26,19 +29,33 @@ class JournalService(
     private val pdlPersonService: PdlPersonService,
     private val bucketService: BucketService
 ) {
-    suspend fun onJournalRequest(receivedSykmelding: ReceivedSykmelding, validationResult: ValidationResult, loggingMeta: LoggingMeta) {
+    suspend fun onJournalRequest(
+        receivedSykmelding: ReceivedSykmelding,
+        validationResult: ValidationResult,
+        loggingMeta: LoggingMeta
+    ) {
         wrapExceptions(loggingMeta) {
             log.info("Mottok en sykmelding, prover å lagre i Joark {}", StructuredArguments.fields(loggingMeta))
+            sikkerlogg.info(
+                "Mottok en sykmelding for fnr {}, prover å lagre i Joark {}",
+                receivedSykmelding.personNrPasient,
+                StructuredArguments.fields(loggingMeta)
+            )
 
             val journalpostid = opprettEllerFinnPDFJournalpost(receivedSykmelding, validationResult, loggingMeta)
             log.info("Found journalpostid $journalpostid {}", StructuredArguments.fields(loggingMeta))
             val registerJournal = getKafkaMessage(receivedSykmelding, journalpostid)
 
             try {
-                producer.send(ProducerRecord(journalCreatedTopic, receivedSykmelding.sykmelding.id, registerJournal)).get()
+                producer.send(ProducerRecord(journalCreatedTopic, receivedSykmelding.sykmelding.id, registerJournal))
+                    .get()
                 log.info("message sendt to kafka {}", StructuredArguments.fields(loggingMeta))
             } catch (ex: Exception) {
-                log.error("Error sending to kafkatopic {} {}", journalCreatedTopic, StructuredArguments.fields(loggingMeta))
+                log.error(
+                    "Error sending to kafkatopic {} {}",
+                    journalCreatedTopic,
+                    StructuredArguments.fields(loggingMeta)
+                )
                 throw ex
             }
             if (skalOpprettePdf(receivedSykmelding.sykmelding.avsenderSystem)) {
@@ -52,12 +69,19 @@ class JournalService(
         }
     }
 
-    suspend fun opprettEllerFinnPDFJournalpost(receivedSykmelding: ReceivedSykmelding, validationResult: ValidationResult, loggingMeta: LoggingMeta): String {
+    suspend fun opprettEllerFinnPDFJournalpost(
+        receivedSykmelding: ReceivedSykmelding,
+        validationResult: ValidationResult,
+        loggingMeta: LoggingMeta
+    ): String {
         return if (skalOpprettePdf(receivedSykmelding.sykmelding.avsenderSystem)) {
             val vedleggListe: List<Vedlegg> = if (receivedSykmelding.vedlegg.isNullOrEmpty()) {
                 emptyList()
             } else {
-                log.info("Sykmelding har ${receivedSykmelding.vedlegg!!.size} vedlegg {}", StructuredArguments.fields(loggingMeta))
+                log.info(
+                    "Sykmelding har ${receivedSykmelding.vedlegg!!.size} vedlegg {}",
+                    StructuredArguments.fields(loggingMeta)
+                )
                 receivedSykmelding.vedlegg!!.map {
                     bucketService.getVedleggFromBucket(it, loggingMeta)
                 }

@@ -44,6 +44,8 @@ spec:
   kafka:
     pool: nav-dev
   webproxy: false
+  secureLogs:
+    enabled: true
   env:
     - name: DOK_ARKIV_URL
       value: https://dokarkiv.dev-fss-pub.nais.io/rest/journalpostapi/v1/journalpost
