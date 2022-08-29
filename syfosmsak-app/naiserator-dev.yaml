@@ -58,4 +58,4 @@ spec:
     - name: SYKMELDING_VEDLEGG_BUCKET_NAME
       value: teamsykmelding-sykmelding-vedlegg-bucket-dev
     - name: PDF_GEN_URL
-      value: https://syfopdfgen.dev.intern.nav.no/api/v1/genpdf/syfosm/syfosm
+      value: https://smpdfgen.dev.intern.nav.no/api/v1/genpdf/sm/sm
