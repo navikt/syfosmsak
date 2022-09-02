@@ -94,6 +94,7 @@ class JournalService(
             log.info("PDF generert {}", StructuredArguments.fields(loggingMeta))
 
             val journalpostPayload = createJournalpostPayload(receivedSykmelding, pdf, validationResult, vedleggListe)
+            sikkerlogg.info("Journalpost avsender: " + journalpostPayload.avsenderMottaker.toString())
             val journalpost = dokArkivClient.createJournalpost(journalpostPayload, loggingMeta)
 
             journalpost.journalpostId
