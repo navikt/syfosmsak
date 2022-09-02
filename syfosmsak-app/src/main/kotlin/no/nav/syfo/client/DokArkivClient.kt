@@ -74,10 +74,14 @@ fun createJournalpostPayload(
     validationResult: ValidationResult,
     vedlegg: List<Vedlegg>
 ) = JournalpostRequest(
-    avsenderMottaker = when (validatePersonAndDNumber(receivedSykmelding.sykmelding.behandler.fnr)) {
+    avsenderMottaker = if (receivedSykmelding.sykmelding.behandler.hpr != null) {
+        createAvsenderMottakerValidHpr(receivedSykmelding)
+    }
+    else {
+        when (validatePersonAndDNumber(receivedSykmelding.sykmelding.behandler.fnr)) {
         true -> createAvsenderMottakerValidFnr(receivedSykmelding)
         else -> createAvsenderMottakerNotValidFnr(receivedSykmelding)
-    },
+    }},
     bruker = Bruker(
         id = receivedSykmelding.personNrPasient,
         idType = "FNR"
@@ -99,6 +103,13 @@ fun createJournalpostPayload(
     tema = "SYM",
     tittel = createTittleJournalpost(validationResult, receivedSykmelding)
 )
+
+private fun hprnummerMedRiktigLengde(hprnummer: String): String {
+    if (hprnummer.length < 9) {
+        return hprnummer.padStart(9, '0')
+    }
+    return hprnummer
+}
 
 fun leggtilDokument(
     msgId: String,
@@ -192,6 +203,13 @@ fun findFiltype(vedlegg: GosysVedlegg): String =
 fun createAvsenderMottakerValidFnr(receivedSykmelding: ReceivedSykmelding): AvsenderMottaker = AvsenderMottaker(
     id = receivedSykmelding.sykmelding.behandler.fnr,
     idType = "FNR",
+    land = "Norge",
+    navn = receivedSykmelding.sykmelding.behandler.formatName()
+)
+
+fun createAvsenderMottakerValidHpr(receivedSykmelding: ReceivedSykmelding): AvsenderMottaker = AvsenderMottaker(
+    id = hprnummerMedRiktigLengde(receivedSykmelding.sykmelding.behandler.hpr!!),
+    idType = "HPRNR",
     land = "Norge",
     navn = receivedSykmelding.sykmelding.behandler.formatName()
 )
