@@ -75,12 +75,13 @@ fun createJournalpostPayload(
     vedlegg: List<Vedlegg>
 ) = JournalpostRequest(
     avsenderMottaker = if (receivedSykmelding.sykmelding.behandler.hpr != null) {
+        log.info("Using hpr nr as avsenderMottaker")
         createAvsenderMottakerValidHpr(receivedSykmelding)
     }
     else {
         when (validatePersonAndDNumber(receivedSykmelding.sykmelding.behandler.fnr)) {
-        true -> createAvsenderMottakerValidFnr(receivedSykmelding)
-        else -> createAvsenderMottakerNotValidFnr(receivedSykmelding)
+        true -> createAvsenderMottakerValidFnr(receivedSykmelding).also {  log.info("Using fnr as avsenderMottaker") }
+        else -> createAvsenderMottakerNotValidFnr(receivedSykmelding).also {  log.info("Using only name as avsenderMottaker") }
     }},
     bruker = Bruker(
         id = receivedSykmelding.personNrPasient,
