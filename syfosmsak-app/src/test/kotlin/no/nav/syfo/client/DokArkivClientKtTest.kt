@@ -27,5 +27,11 @@ class DokArkivClientKtTest : FunSpec({
             oppdatertVedlegg.contentType shouldBeEqualTo "application/pdf"
             oppdatertVedlegg.description shouldBeEqualTo vedleggMessage.vedlegg.description
         }
+
+        test("Skal legge på padding dersom hpr er under 9 siffer") {
+            val hprnummmer = hprnummerMedRiktigLengde("02345678 ".trim())
+
+            hprnummmer shouldBeEqualTo "002345678"
+        }
     }
 })

@@ -76,7 +76,16 @@ fun createJournalpostPayload(
     loggingMeta: LoggingMeta
 ) = JournalpostRequest(
     avsenderMottaker = if (receivedSykmelding.sykmelding.behandler.hpr != null) {
-        createAvsenderMottakerValidHpr(receivedSykmelding).also { log.info("Hpr nummer: {}, {}", receivedSykmelding.sykmelding.behandler.hpr, fields(loggingMeta)) }
+        createAvsenderMottakerValidHpr(
+            receivedSykmelding,
+            receivedSykmelding.sykmelding.behandler.hpr!!.trim()
+        ).also {
+            log.info(
+                "Hpr nummer: {}, {}",
+                receivedSykmelding.sykmelding.behandler.hpr!!.trim(),
+                fields(loggingMeta)
+            )
+        }
     } else {
         when (validatePersonAndDNumber(receivedSykmelding.sykmelding.behandler.fnr)) {
             true -> createAvsenderMottakerValidFnr(receivedSykmelding).also { log.info("Using fnr as avsenderMottaker") }
@@ -105,7 +114,7 @@ fun createJournalpostPayload(
     tittel = createTittleJournalpost(validationResult, receivedSykmelding)
 )
 
-private fun hprnummerMedRiktigLengde(hprnummer: String): String {
+fun hprnummerMedRiktigLengde(hprnummer: String): String {
     if (hprnummer.length < 9) {
         return hprnummer.padStart(9, '0')
     }
@@ -167,6 +176,7 @@ fun leggtilDokument(
     }
     return listDokument
 }
+
 fun toGosysVedlegg(vedlegg: Vedlegg): GosysVedlegg {
     return GosysVedlegg(
         contentType = vedlegg.type,
@@ -208,12 +218,13 @@ fun createAvsenderMottakerValidFnr(receivedSykmelding: ReceivedSykmelding): Avse
     navn = receivedSykmelding.sykmelding.behandler.formatName()
 )
 
-fun createAvsenderMottakerValidHpr(receivedSykmelding: ReceivedSykmelding): AvsenderMottaker = AvsenderMottaker(
-    id = hprnummerMedRiktigLengde(receivedSykmelding.sykmelding.behandler.hpr!!),
-    idType = "HPRNR",
-    land = "Norge",
-    navn = receivedSykmelding.sykmelding.behandler.formatName()
-)
+fun createAvsenderMottakerValidHpr(receivedSykmelding: ReceivedSykmelding, hprnummer: String): AvsenderMottaker =
+    AvsenderMottaker(
+        id = hprnummerMedRiktigLengde(hprnummer),
+        idType = "HPRNR",
+        land = "Norge",
+        navn = receivedSykmelding.sykmelding.behandler.formatName()
+    )
 
 fun createAvsenderMottakerNotValidFnr(receivedSykmelding: ReceivedSykmelding): AvsenderMottaker = AvsenderMottaker(
     land = "Norge",
