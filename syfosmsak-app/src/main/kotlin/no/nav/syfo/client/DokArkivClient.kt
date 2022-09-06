@@ -72,17 +72,17 @@ fun createJournalpostPayload(
     receivedSykmelding: ReceivedSykmelding,
     pdf: ByteArray,
     validationResult: ValidationResult,
-    vedlegg: List<Vedlegg>
+    vedlegg: List<Vedlegg>,
+    loggingMeta: LoggingMeta
 ) = JournalpostRequest(
     avsenderMottaker = if (receivedSykmelding.sykmelding.behandler.hpr != null) {
-        log.info("Using hpr nr as avsenderMottaker")
-        createAvsenderMottakerValidHpr(receivedSykmelding)
-    }
-    else {
+        createAvsenderMottakerValidHpr(receivedSykmelding).also { log.info("Hpr nummer: {}, {}", receivedSykmelding.sykmelding.behandler.hpr, fields(loggingMeta)) }
+    } else {
         when (validatePersonAndDNumber(receivedSykmelding.sykmelding.behandler.fnr)) {
-        true -> createAvsenderMottakerValidFnr(receivedSykmelding).also {  log.info("Using fnr as avsenderMottaker") }
-        else -> createAvsenderMottakerNotValidFnr(receivedSykmelding).also {  log.info("Using only name as avsenderMottaker") }
-    }},
+            true -> createAvsenderMottakerValidFnr(receivedSykmelding).also { log.info("Using fnr as avsenderMottaker") }
+            else -> createAvsenderMottakerNotValidFnr(receivedSykmelding).also { log.info("Using only name as avsenderMottaker") }
+        }
+    },
     bruker = Bruker(
         id = receivedSykmelding.personNrPasient,
         idType = "FNR"
