@@ -98,9 +98,18 @@ fun main() {
             }
         }
         install(HttpRequestRetry) {
-            maxRetries = 3
-            delayMillis { retry ->
-                retry * 50L
+            constantDelay(100, 0, false)
+            retryOnExceptionIf(3) { _, throwable ->
+                log.warn("Caught exception ${throwable.message}")
+                true
+            }
+            retryIf(maxRetries) { _, response ->
+                if (response.status.value.let { it in 500..599 }) {
+                    log.warn("Retrying for statuscode ${response.status.value}")
+                    true
+                } else {
+                    false
+                }
             }
         }
     }
