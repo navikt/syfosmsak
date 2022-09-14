@@ -21,13 +21,13 @@ class SelfTestSpek : FunSpec({
             application.routing { registerNaisApi(applicationState) }
 
             test("Returns ok on is_alive") {
-                with(handleRequest(HttpMethod.Get, "/is_alive")) {
+                with(handleRequest(HttpMethod.Get, "/internal/is_alive")) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     response.content shouldBeEqualTo "I'm alive! :)"
                 }
             }
             test("Returns ok in is_ready") {
-                with(handleRequest(HttpMethod.Get, "/is_ready")) {
+                with(handleRequest(HttpMethod.Get, "/internal/is_ready")) {
                     response.status() shouldBeEqualTo HttpStatusCode.OK
                     response.content shouldBeEqualTo "I'm ready! :)"
                 }
@@ -43,14 +43,14 @@ class SelfTestSpek : FunSpec({
             application.routing { registerNaisApi(applicationState) }
 
             test("Returns internal server error when liveness check fails") {
-                with(handleRequest(HttpMethod.Get, "/is_alive")) {
+                with(handleRequest(HttpMethod.Get, "/internal/is_alive")) {
                     response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
                     response.content shouldBeEqualTo "I'm dead x_x"
                 }
             }
 
             test("Returns internal server error when readyness check fails") {
-                with(handleRequest(HttpMethod.Get, "/is_ready")) {
+                with(handleRequest(HttpMethod.Get, "/internal/is_ready")) {
                     response.status() shouldBeEqualTo HttpStatusCode.InternalServerError
                     response.content shouldBeEqualTo "Please wait! I'm not ready :("
                 }

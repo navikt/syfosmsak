@@ -13,19 +13,19 @@ spec:
     cpuThresholdPercentage: 90
   port: 8080
   liveness:
-    path: /is_alive
+    path: /internal/is_alive
     initialDelay: 30
     timeout: 5
     periodSeconds: 5
     failureThreshold: 5
   readiness:
-    path: /is_ready
+    path: /internal/is_ready
     initialDelay: 30
     periodSeconds: 5
     timeout: 1
   prometheus:
     enabled: true
-    path: /prometheus
+    path: /internal/prometheus
   resources:
     limits:
       cpu: 1200m
@@ -46,6 +46,12 @@ spec:
   webproxy: false
   secureLogs:
     enabled: true
+  accessPolicy:
+    outbound:
+      rules:
+        - application: smpdfgen
+          namespace: teamsykmelding
+          cluster: prod-gcp
   env:
     - name: DOK_ARKIV_URL
       value: https://dokarkiv.prod-fss-pub.nais.io/rest/journalpostapi/v1/journalpost
@@ -57,5 +63,3 @@ spec:
       value: api://prod-fss.pdl.pdl-api/.default
     - name: SYKMELDING_VEDLEGG_BUCKET_NAME
       value: teamsykmelding-sykmelding-vedlegg-bucket-prod
-    - name: PDF_GEN_URL
-      value: https://smpdfgen.intern.nav.no/api/v1/genpdf/sm/sm
