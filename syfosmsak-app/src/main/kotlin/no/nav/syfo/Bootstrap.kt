@@ -12,10 +12,11 @@ import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.engine.cio.CIOEngineConfig
+import io.ktor.client.engine.apache.Apache
+import io.ktor.client.engine.apache.ApacheEngineConfig
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpResponseValidator
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
@@ -81,7 +82,7 @@ fun main() {
 
     DefaultExports.initialize()
 
-    val config: HttpClientConfig<CIOEngineConfig>.() -> Unit = {
+    val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(ContentNegotiation) {
             jackson {
                 registerModule(JavaTimeModule())
@@ -112,9 +113,14 @@ fun main() {
                 }
             }
         }
+        install(HttpTimeout) {
+            socketTimeoutMillis = 120_000
+            connectTimeoutMillis = 40_000
+            requestTimeoutMillis = 40_000
+        }
     }
 
-    val httpClient = HttpClient(CIO, config)
+    val httpClient = HttpClient(Apache, config)
 
     val accessTokenClientV2 = AccessTokenClientV2(env.aadAccessTokenV2Url, env.clientIdV2, env.clientSecretV2, httpClient)
     val dokArkivClient = DokArkivClient(env.dokArkivUrl, accessTokenClientV2, env.dokArkivScope, httpClient)
