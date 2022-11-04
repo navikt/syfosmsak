@@ -64,7 +64,7 @@ fun startKafkaAivenStream(env: Environment, applicationState: ApplicationState) 
         ),
         Consumed.with(Serdes.String(), Serdes.String())
     ).filter { _, value ->
-        value?.let { objectMapper.readValue<ReceivedSykmelding>(value).merknader?.any { it.type == "UNDER_BEHANDLING" } != true } ?: true
+        value?.let { objectMapper.readValue<ReceivedSykmelding>(value).skalBehandles() } ?: true
     }
 
     val behandlingsutfallStream = streamsBuilder.stream(
@@ -113,4 +113,8 @@ fun startKafkaAivenStream(env: Environment, applicationState: ApplicationState) 
         }
     }
     stream.start()
+}
+
+fun ReceivedSykmelding.skalBehandles(): Boolean {
+    return merknader?.any { it.type == "UNDER_BEHANDLING" } != true && utenlandskSykmelding == null
 }

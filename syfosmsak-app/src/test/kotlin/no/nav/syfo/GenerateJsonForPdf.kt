@@ -33,7 +33,8 @@ fun main() {
         partnerreferanse = "",
         fellesformat = "",
         tssid = null,
-        vedlegg = null
+        vedlegg = null,
+        utenlandskSykmelding = null
     )
     val validationResult = ValidationResult(
         status = Status.MANUAL_PROCESSING,
