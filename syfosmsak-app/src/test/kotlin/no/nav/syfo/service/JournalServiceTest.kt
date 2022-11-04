@@ -120,5 +120,5 @@ fun generateReceivedSykmelding(sykmelding: Sykmelding): ReceivedSykmelding =
     ReceivedSykmelding(
         sykmelding = sykmelding, personNrPasient = "fnr", tlfPasient = null, personNrLege = "fnrLege", navLogId = "id", msgId = "msgid",
         legekontorOrgNr = null, legekontorHerId = null, legekontorReshId = null, legekontorOrgName = "Legekontoret", mottattDato = LocalDateTime.now(), rulesetVersion = "1",
-        merknader = emptyList(), fellesformat = "", tssid = null, partnerreferanse = null, legeHelsepersonellkategori = null, legeHprNr = null, vedlegg = null
+        merknader = emptyList(), fellesformat = "", tssid = null, partnerreferanse = null, legeHelsepersonellkategori = null, legeHprNr = null, vedlegg = null, utenlandskSykmelding = null
     )
