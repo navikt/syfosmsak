@@ -114,11 +114,12 @@ fun createJournalpostPayload(
     tittel = createTittleJournalpost(validationResult, receivedSykmelding)
 )
 
-fun hprnummerMedRiktigLengde(hprnummer: String): String {
-    if (hprnummer.length < 9) {
-        return hprnummer.padStart(9, '0')
+fun hprnummerMedRiktigLengdeOgFormat(hprnummer: String): String {
+    val hprnummerKunTall = hprnummer.filter { it.isDigit() }
+    if (hprnummerKunTall.length < 9) {
+        return hprnummerKunTall.padStart(9, '0')
     }
-    return hprnummer
+    return hprnummerKunTall
 }
 
 fun leggtilDokument(
@@ -220,7 +221,7 @@ fun createAvsenderMottakerValidFnr(receivedSykmelding: ReceivedSykmelding): Avse
 
 fun createAvsenderMottakerValidHpr(receivedSykmelding: ReceivedSykmelding, hprnummer: String): AvsenderMottaker =
     AvsenderMottaker(
-        id = hprnummerMedRiktigLengde(hprnummer),
+        id = hprnummerMedRiktigLengdeOgFormat(hprnummer),
         idType = "HPRNR",
         land = "Norge",
         navn = receivedSykmelding.sykmelding.behandler.formatName()

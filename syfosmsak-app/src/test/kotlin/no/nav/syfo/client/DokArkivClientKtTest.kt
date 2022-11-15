@@ -29,7 +29,17 @@ class DokArkivClientKtTest : FunSpec({
         }
 
         test("Skal legge på padding dersom hpr er under 9 siffer") {
-            val hprnummmer = hprnummerMedRiktigLengde("02345678 ".trim())
+            val hprnummmer = hprnummerMedRiktigLengdeOgFormat("02345678 ".trim())
+
+            hprnummmer shouldBeEqualTo "002345678"
+        }
+        test("Skal fjerne - fra hprnummer") {
+            val hprnummmer = hprnummerMedRiktigLengdeOgFormat("-02345678".trim())
+
+            hprnummmer shouldBeEqualTo "002345678"
+        }
+        test("Skal fjerne bokstaver fra hprnummer") {
+            val hprnummmer = hprnummerMedRiktigLengdeOgFormat("0A234B5678".trim())
 
             hprnummmer shouldBeEqualTo "002345678"
         }
