@@ -34,7 +34,9 @@ fun main() {
         fellesformat = "",
         tssid = null,
         vedlegg = null,
-        utenlandskSykmelding = null
+        utenlandskSykmelding = null,
+        behandlderHprNr = null,
+        behandlderPersonNr = null
     )
     val validationResult = ValidationResult(
         status = Status.MANUAL_PROCESSING,
