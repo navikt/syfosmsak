@@ -38,7 +38,8 @@ class JournalServiceTest : FunSpec({
     val pdfgenClient = mockk<PdfgenClient>()
     val pdlPersonService = mockk<PdlPersonService>()
     val bucketService = mockk<BucketService>()
-    val journalService = JournalService("topic", producer, dokArkivClient, pdfgenClient, pdlPersonService, bucketService)
+    val journalService =
+        JournalService("topic", producer, dokArkivClient, pdfgenClient, pdlPersonService, bucketService)
 
     val validationResult = ValidationResult(Status.OK, emptyList())
     val loggingMeta = LoggingMeta("", "", "", "")
@@ -47,9 +48,18 @@ class JournalServiceTest : FunSpec({
 
     beforeTest {
         clearMocks(dokArkivClient)
-        coEvery { pdlPersonService.getPdlPerson(any(), any()) } returns PdlPerson(Navn("fornavn", null, "etternavn"), "fnr", "aktørid", null)
+        coEvery { pdlPersonService.getPdlPerson(any(), any()) } returns PdlPerson(
+            Navn("fornavn", null, "etternavn"),
+            "fnr",
+            "aktørid",
+            null
+        )
         coEvery { pdfgenClient.createPdf(any()) } returns "PDF".toByteArray(Charsets.UTF_8)
-        coEvery { dokArkivClient.createJournalpost(any(), any()) } returns JournalpostResponse(dokumenter = emptyList(), journalpostId = journalpostId, journalpostferdigstilt = true)
+        coEvery { dokArkivClient.createJournalpost(any(), any()) } returns JournalpostResponse(
+            dokumenter = emptyList(),
+            journalpostId = journalpostId,
+            journalpostferdigstilt = true
+        )
     }
 
     context("JournalService - opprettEllerFinnPDFJournalpost") {
@@ -80,7 +90,8 @@ class JournalServiceTest : FunSpec({
         }
 
         test("Oppretter PDF hvis sykmeldingen ikke er en papirsykmelding") {
-            val sykmelding = generateReceivedSykmelding(generateSykmelding(avsenderSystem = AvsenderSystem("EPJ-systemet", "1")))
+            val sykmelding =
+                generateReceivedSykmelding(generateSykmelding(avsenderSystem = AvsenderSystem("EPJ-systemet", "1")))
 
             val opprettetJournalpostId =
                 journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, loggingMeta)
@@ -88,7 +99,8 @@ class JournalServiceTest : FunSpec({
             opprettetJournalpostId shouldBeEqualTo journalpostId
         }
         test("Oppretter PDF hvis sykmeldingen er en papirsykmelding og journalpostid ikke er satt som versjonsnummer") {
-            val sykmelding = generateReceivedSykmelding(generateSykmelding(avsenderSystem = AvsenderSystem("Papirsykmelding", "1")))
+            val sykmelding =
+                generateReceivedSykmelding(generateSykmelding(avsenderSystem = AvsenderSystem("Papirsykmelding", "1")))
 
             val opprettetJournalpostId =
                 journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, loggingMeta)
@@ -96,7 +108,14 @@ class JournalServiceTest : FunSpec({
             opprettetJournalpostId shouldBeEqualTo journalpostId
         }
         test("Oppretter ikke PDF hvis sykmeldingen er en papirsykmelding og versjonsnummer er journalpostid") {
-            val sykmelding = generateReceivedSykmelding(generateSykmelding(avsenderSystem = AvsenderSystem("Papirsykmelding", journalpostIdPapirsykmelding)))
+            val sykmelding = generateReceivedSykmelding(
+                generateSykmelding(
+                    avsenderSystem = AvsenderSystem(
+                        "Papirsykmelding",
+                        journalpostIdPapirsykmelding
+                    )
+                )
+            )
 
             val opprettetJournalpostId =
                 journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, loggingMeta)
@@ -104,7 +123,13 @@ class JournalServiceTest : FunSpec({
             opprettetJournalpostId shouldBeEqualTo journalpostIdPapirsykmelding
         }
         test("Journalfører vedlegg hvis sykmelding inneholder vedlegg") {
-            coEvery { bucketService.getVedleggFromBucket(any(), any()) } returns Vedlegg(Content("Base64Container", "base64"), "application/pdf", "vedlegg2.pdf")
+            coEvery { bucketService.getVedleggFromBucket(any(), any()) } returns Vedlegg(
+                Content(
+                    "Base64Container",
+                    "base64"
+                ),
+                "application/pdf", "vedlegg2.pdf"
+            )
             val sykmelding = generateReceivedSykmelding(generateSykmelding()).copy(vedlegg = listOf("vedleggsid1"))
 
             val opprettetJournalpostId =
@@ -118,7 +143,26 @@ class JournalServiceTest : FunSpec({
 
 fun generateReceivedSykmelding(sykmelding: Sykmelding): ReceivedSykmelding =
     ReceivedSykmelding(
-        sykmelding = sykmelding, personNrPasient = "fnr", tlfPasient = null, personNrLege = "fnrLege", navLogId = "id", msgId = "msgid",
-        legekontorOrgNr = null, legekontorHerId = null, legekontorReshId = null, legekontorOrgName = "Legekontoret", mottattDato = LocalDateTime.now(), rulesetVersion = "1",
-        merknader = emptyList(), fellesformat = "", tssid = null, partnerreferanse = null, legeHelsepersonellkategori = null, legeHprNr = null, vedlegg = null, utenlandskSykmelding = null
+        sykmelding = sykmelding,
+        personNrPasient = "fnr",
+        tlfPasient = null,
+        personNrLege = "fnrLege",
+        navLogId = "id",
+        msgId = "msgid",
+        legekontorOrgNr = null,
+        legekontorHerId = null,
+        legekontorReshId = null,
+        legekontorOrgName = "Legekontoret",
+        mottattDato = LocalDateTime.now(),
+        rulesetVersion = "1",
+        merknader = emptyList(),
+        fellesformat = "",
+        tssid = null,
+        partnerreferanse = null,
+        legeHelsepersonellkategori = null,
+        legeHprNr = null,
+        vedlegg = null,
+        utenlandskSykmelding = null,
+        behandlderHprNr = null,
+        behandlderPersonNr = null
     )

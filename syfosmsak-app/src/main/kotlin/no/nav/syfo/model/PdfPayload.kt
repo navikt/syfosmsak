@@ -9,7 +9,8 @@ data class PdfPayload(
     val mottattDato: LocalDateTime,
     val behandlerKontorOrgName: String,
     val merknader: List<Merknad>?,
-    val rulesetVersion: String?
+    val rulesetVersion: String?,
+    val behandlderHprNr: String?
 )
 
 data class Pasient(

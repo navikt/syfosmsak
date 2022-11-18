@@ -50,5 +50,6 @@ fun createPdfPayload(
     mottattDato = receivedSykmelding.mottattDato,
     behandlerKontorOrgName = receivedSykmelding.legekontorOrgName,
     merknader = receivedSykmelding.merknader,
-    rulesetVersion = receivedSykmelding.rulesetVersion
+    rulesetVersion = receivedSykmelding.rulesetVersion,
+    behandlderHprNr = receivedSykmelding.behandlderHprNr
 )
