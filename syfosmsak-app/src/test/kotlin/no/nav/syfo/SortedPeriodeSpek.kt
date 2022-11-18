@@ -35,9 +35,7 @@ class SortedPeriodeSpek : FunSpec({
             legeHelsepersonellkategori = null,
             legeHprNr = null,
             vedlegg = null,
-            utenlandskSykmelding = null,
-            behandlderHprNr = null,
-            behandlderPersonNr = null
+            utenlandskSykmelding = null
         )
     }
 
