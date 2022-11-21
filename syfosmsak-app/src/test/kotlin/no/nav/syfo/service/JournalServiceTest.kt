@@ -138,6 +138,20 @@ class JournalServiceTest : FunSpec({
             opprettetJournalpostId shouldBeEqualTo journalpostId
             coVerify { dokArkivClient.createJournalpost(match { it.dokumenter.size == 2 }, any()) }
         }
+
+        test("Oppretter ikke PDF hvis sykmeldingen er fra syk-dig") {
+            val sykmelding =
+                generateReceivedSykmelding(
+                    generateSykmelding(
+                        avsenderSystem = AvsenderSystem("syk-dig", journalpostIdPapirsykmelding)
+                    )
+                )
+
+            val opprettetJournalpostId =
+                journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, loggingMeta)
+
+            opprettetJournalpostId shouldBeEqualTo journalpostIdPapirsykmelding
+        }
     }
 })
 

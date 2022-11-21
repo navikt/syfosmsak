@@ -105,7 +105,7 @@ class JournalService(
     }
 
     private fun skalOpprettePdf(avsenderSystem: AvsenderSystem): Boolean {
-        return !(avsenderSystem.navn == "Papirsykmelding" && avsenderSystem.versjon != "1")
+        return !((avsenderSystem.navn == "Papirsykmelding" && avsenderSystem.versjon != "1") || avsenderSystem.navn == "syk-dig")
     }
 
     fun getKafkaMessage(
