@@ -2,7 +2,6 @@ package no.nav.syfo.client
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -12,7 +11,9 @@ import no.nav.syfo.log
 import no.nav.syfo.model.Pasient
 import no.nav.syfo.model.PdfPayload
 import no.nav.syfo.model.ReceivedSykmelding
+import no.nav.syfo.model.Sykmelding
 import no.nav.syfo.model.ValidationResult
+import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.model.PdlPerson
 
 class PdfgenClient constructor(
@@ -45,7 +46,7 @@ fun createPdfPayload(
         personnummer = receivedSykmelding.personNrPasient,
         tlfNummer = receivedSykmelding.tlfPasient
     ),
-    sykmelding = receivedSykmelding.sykmelding,
+    sykmelding = mapToSykmeldingUtenUlovligeTegn(receivedSykmelding.sykmelding),
     validationResult = validationResult,
     mottattDato = receivedSykmelding.mottattDato,
     behandlerKontorOrgName = receivedSykmelding.legekontorOrgName,
@@ -53,3 +54,9 @@ fun createPdfPayload(
     rulesetVersion = receivedSykmelding.rulesetVersion,
     signerendBehandlerHprNr = receivedSykmelding.legeHprNr
 )
+
+fun mapToSykmeldingUtenUlovligeTegn(sykmelding: Sykmelding): Sykmelding {
+    val sykmeldingSomString = objectMapper.writeValueAsString(sykmelding)
+    val sykmeldingSomStringUtenUlovligeTegn = sykmeldingSomString.replace(regex = Regex("\\p{C}"), "")
+    return objectMapper.readValue(sykmeldingSomStringUtenUlovligeTegn, Sykmelding::class.java)
+}
