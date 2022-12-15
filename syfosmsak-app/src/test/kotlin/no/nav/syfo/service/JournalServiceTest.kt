@@ -20,6 +20,7 @@ import no.nav.syfo.model.JournalpostResponse
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.Sykmelding
+import no.nav.syfo.model.UtenlandskSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.Vedlegg
 import no.nav.syfo.pdl.model.Navn
@@ -45,6 +46,7 @@ class JournalServiceTest : FunSpec({
     val loggingMeta = LoggingMeta("", "", "", "")
     val journalpostId = "1234"
     val journalpostIdPapirsykmelding = "5555"
+    val journalpostIdUtenlandskSykmelding = "7894"
 
     beforeTest {
         clearMocks(dokArkivClient)
@@ -121,6 +123,21 @@ class JournalServiceTest : FunSpec({
                 journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, loggingMeta)
 
             opprettetJournalpostId shouldBeEqualTo journalpostIdPapirsykmelding
+        }
+        test("Oppretter ikke PDF hvis sykmeldingen er utenlandsk og versjonsnummer er journalpostid") {
+            val sykmelding = generateReceivedSykmelding(
+                generateSykmelding(
+                    avsenderSystem = AvsenderSystem(
+                        "syk-dig",
+                        journalpostIdUtenlandskSykmelding
+                    )
+                )
+            ).copy(utenlandskSykmelding = UtenlandskSykmelding("GER", false))
+
+            val opprettetJournalpostId =
+                journalService.opprettEllerFinnPDFJournalpost(sykmelding, validationResult, loggingMeta)
+
+            opprettetJournalpostId shouldBeEqualTo journalpostIdUtenlandskSykmelding
         }
         test("Journalfører vedlegg hvis sykmelding inneholder vedlegg") {
             coEvery { bucketService.getVedleggFromBucket(any(), any()) } returns Vedlegg(

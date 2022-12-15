@@ -9,7 +9,7 @@ on:
       - '.github/workflows/stream**'
       - 'build.gradle.kts'
 env:
-  IMAGE: docker.pkg.github.com/${{ github.repository }}/syfosmsak-stream:${{ github.sha }}
+  IMAGE: ghcr.io/${{ github.repository }}/syfosmsak-stream:${{ github.sha }}
 
 jobs:
   build:
@@ -17,15 +17,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup java
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
+          distribution: 'temurin'
           java-version: '17'
       - name: Checkout code
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
       - name: Gradle wrapper validation
         uses: gradle/wrapper-validation-action@v1
       - name: Setup gradle dependency cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~../.gradle/caches
@@ -51,7 +52,7 @@ jobs:
         run: |
           cd syfosmsak-stream
           docker build --tag ${IMAGE} .
-          docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
+          docker login ghcr.io -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
           docker push ${IMAGE}
       - name: Deploy to Preprod
         uses: nais/deploy/actions/deploy@master
