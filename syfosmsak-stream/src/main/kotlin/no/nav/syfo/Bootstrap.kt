@@ -116,5 +116,5 @@ fun startKafkaAivenStream(env: Environment, applicationState: ApplicationState) 
 }
 
 fun ReceivedSykmelding.skalBehandles(): Boolean {
-    return merknader?.any { it.type == "UNDER_BEHANDLING" } != true && utenlandskSykmelding == null
+    return merknader?.any { it.type == "UNDER_BEHANDLING" } != true
 }
