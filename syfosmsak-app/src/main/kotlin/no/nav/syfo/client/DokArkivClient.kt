@@ -237,9 +237,15 @@ fun createTittleJournalpost(validationResult: ValidationResult, receivedSykmeldi
         "Avvist Sykmelding ${getFomTomTekst(receivedSykmelding)}"
     } else if (receivedSykmelding.sykmelding.avsenderSystem.navn == "Papirsykmelding") {
         "Sykmelding mottatt på papir ${getFomTomTekst(receivedSykmelding)}"
+    }
+      else if (receivedSykmelding.erUtenlandskSykmelding()) {
+        "Utenlandsk sykmelding ${getFomTomTekst(receivedSykmelding)}"
     } else {
         "Sykmelding ${getFomTomTekst(receivedSykmelding)}"
     }
+}
+fun ReceivedSykmelding.erUtenlandskSykmelding(): Boolean {
+    return utenlandskSykmelding != null
 }
 
 private fun getFomTomTekst(receivedSykmelding: ReceivedSykmelding) =
