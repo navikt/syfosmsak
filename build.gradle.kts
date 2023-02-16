@@ -8,13 +8,12 @@ version = "1.0.0"
 val coroutinesVersion = "1.6.4"
 val jacksonVersion = "2.14.2"
 val kafkaVersion = "3.3.1"
-val kluentVersion = "1.68"
 val ktorVersion = "2.2.3"
 val logstashLogbackEncoder = "7.2"
 val logbackVersion = "1.4.5"
 val prometheusVersion = "0.16.0"
 val smCommonVersion = "1.fbf33a9"
-val kotestVersion = "5.4.1"
+val junitJupiterVersion = "5.9.2"
 val ioMockVersion = "1.12.4"
 val kotlinVersion = "1.8.10"
 val pdfboxVersion = "2.0.24"
@@ -78,9 +77,9 @@ subprojects {
         implementation("org.apache.pdfbox:pdfbox:$pdfboxVersion")
         implementation("com.google.cloud:google-cloud-storage:$googleCloudStorageVersion")
 
-        testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
-        testImplementation("org.amshove.kluent:kluent:$kluentVersion")
-        testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
+        testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
+        testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
+        testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
         testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
         testImplementation("io.mockk:mockk:$ioMockVersion")
     }

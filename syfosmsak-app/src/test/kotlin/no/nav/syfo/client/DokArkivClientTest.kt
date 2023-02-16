@@ -3,7 +3,6 @@ package no.nav.syfo.client
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import io.kotest.core.spec.style.FunSpec
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -19,14 +18,19 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.model.JournalpostRequest
 import no.nav.syfo.model.JournalpostResponse
 import no.nav.syfo.util.LoggingMeta
-import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import java.net.ServerSocket
 import java.util.concurrent.TimeUnit
 
-class DokArkivClientTest : FunSpec({
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+internal class DokArkivClientTest {
     val accessTokenClientV2 = mockk<AccessTokenClientV2>()
     val httpClient = HttpClient(CIO) {
         install(ContentNegotiation) {
@@ -55,12 +59,14 @@ class DokArkivClientTest : FunSpec({
                             emptyList(), "nyJpId", true, null, null
                         )
                     )
+
                     call.request.header("Nav-Callid") == "DUPLIKAT" -> call.respond(
                         HttpStatusCode.Conflict,
                         JournalpostResponse(
                             emptyList(), "eksisterendeJpId", true, null, null
                         )
                     )
+
                     else -> call.respond(HttpStatusCode.InternalServerError)
                 }
             }
@@ -69,13 +75,17 @@ class DokArkivClientTest : FunSpec({
 
     val dokArkivClient = DokArkivClient("$mockHttpServerUrl/dokarkiv", accessTokenClientV2, "scope", httpClient)
 
-    afterSpec {
+    @AfterAll
+    internal fun teardown() {
         mockServer.stop(TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(1))
     }
 
-    context("Test av DokarkivClient") {
-        test("Happy-case") {
-            coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "Token"
+    @Test
+    internal fun `Happy-case`() {
+        coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "Token"
+
+        runBlocking {
+
             val jpResponse = dokArkivClient.createJournalpost(
                 JournalpostRequest(
                     dokumenter = emptyList(),
@@ -84,10 +94,15 @@ class DokArkivClientTest : FunSpec({
                 loggingMetadata
             )
 
-            jpResponse.journalpostId shouldBeEqualTo "nyJpId"
+            Assertions.assertEquals("nyJpId", jpResponse.journalpostId)
         }
-        test("Feiler ikke ved duplikat") {
-            coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "Token"
+    }
+
+    @Test
+    internal fun `Feiler ikke ved duplikat`() {
+        coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "Token"
+
+        runBlocking {
             val jpResponse = dokArkivClient.createJournalpost(
                 JournalpostRequest(
                     dokumenter = emptyList(),
@@ -96,7 +111,7 @@ class DokArkivClientTest : FunSpec({
                 loggingMetadata
             )
 
-            jpResponse.journalpostId shouldBeEqualTo "eksisterendeJpId"
+            Assertions.assertEquals("eksisterendeJpId", jpResponse.journalpostId)
         }
     }
-})
+}

@@ -13,7 +13,7 @@ import no.nav.syfo.pdl.model.PdlPerson
 import java.time.LocalDateTime
 
 fun main() {
-    val sykmelding: Sykmelding = objectMapper.readValue(PdfPayload::class.java.getResourceAsStream("/sm.json"))
+    val sykmelding: Sykmelding = objectMapper.readValue(PdfPayload::class.java.getResourceAsStream("/sm.json")!!)
     val receivedSykmelding = ReceivedSykmelding(
         sykmelding,
         personNrPasient = "123456789",
