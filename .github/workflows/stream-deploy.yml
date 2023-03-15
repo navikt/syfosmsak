@@ -8,11 +8,11 @@ on:
       - '.github/workflows/stream**'
       - 'build.gradle.kts'
 
-env:
-  IMAGE: ghcr.io/${{ github.repository }}/syfosmsak-stream:${{ github.sha }}
-
 jobs:
   build:
+    permissions:
+      contents: "read"
+      id-token: "write"
     name: Checkout code and create docker tag
     runs-on: ubuntu-latest
     steps:
@@ -46,23 +46,25 @@ jobs:
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./gradlew :syfosmsak-stream:shadowJar -x test
-      - name: Build and publish Docker image
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd syfosmsak-stream
-          docker build --tag ${IMAGE} .
-          docker login ghcr.io -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
-          docker push ${IMAGE}
+      - name: stream-docker-build-push
+        uses: nais/docker-build-push@v0
+        id: stream-docker-build-push
+        with:
+          team: teamsykmelding
+          dockerfile: syfosmsak-stream/Dockerfile
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
       - name: Deploy to Preprod
         uses: nais/deploy/actions/deploy@master
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY_TEAMSYKMELDING }}
           CLUSTER: dev-gcp
           RESOURCE: syfosmsak-stream/naiserator-dev.yaml
+          VAR: image=${{ steps.stream-docker-build-push.outputs.image }}
       - name: Deploy to Prod
         uses: nais/deploy/actions/deploy@master
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY_TEAMSYKMELDING }}
           CLUSTER: prod-gcp
           RESOURCE: syfosmsak-stream/naiserator-prod.yaml
+          VAR: image=${{ steps.stream-docker-build-push.outputs.image }}
