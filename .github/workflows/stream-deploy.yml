@@ -51,7 +51,9 @@ jobs:
         id: stream-docker-build-push
         with:
           team: teamsykmelding
-          dockerfile: syfosmsak-stream/Dockerfile
+          dockerfile: ./syfosmsak-stream/Dockerfile
+          docker_context: syfosmsak-stream
+          image_suffix: syfosmsak-stream
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
       - name: Deploy to Preprod
