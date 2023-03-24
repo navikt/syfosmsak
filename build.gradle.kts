@@ -7,12 +7,12 @@ version = "1.0.0"
 
 val coroutinesVersion = "1.6.4"
 val jacksonVersion = "2.14.2"
-val kafkaVersion = "3.3.1"
+val kafkaVersion = "3.4.0"
 val ktorVersion = "2.2.4"
-val logstashLogbackEncoder = "7.2"
+val logstashLogbackEncoder = "7.3"
 val logbackVersion = "1.4.5"
 val prometheusVersion = "0.16.0"
-val smCommonVersion = "1.fbf33a9"
+val smCommonVersion = "1.9df1108"
 val junitJupiterVersion = "5.9.2"
 val ioMockVersion = "1.13.4"
 val kotlinVersion = "1.8.10"
@@ -21,8 +21,8 @@ val googleCloudStorageVersion = "2.3.0"
 
 plugins {
     kotlin("jvm") version "1.8.10"
-    id("org.jmailen.kotlinter") version "3.13.0"
-    id("com.github.johnrengelman.shadow") version "8.1.0"
+    id("org.jmailen.kotlinter") version "3.14.0"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 val githubUser: String by project
