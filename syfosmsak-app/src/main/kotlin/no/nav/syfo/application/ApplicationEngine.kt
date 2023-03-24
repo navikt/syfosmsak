@@ -9,7 +9,7 @@ import no.nav.syfo.application.api.registerNaisApi
 
 fun createApplicationEngine(
     env: Environment,
-    applicationState: ApplicationState
+    applicationState: ApplicationState,
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         routing {

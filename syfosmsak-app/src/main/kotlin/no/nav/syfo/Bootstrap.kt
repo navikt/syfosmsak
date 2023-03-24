@@ -75,7 +75,7 @@ fun main() {
     val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
         env,
-        applicationState
+        applicationState,
     )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
@@ -165,7 +165,7 @@ fun launchListeners(
     val kafkaAivenConsumer = KafkaConsumer<String, String>(
         KafkaUtils.getAivenKafkaConfig()
             .toConsumerConfig("${env.applicationName}-consumer", valueDeserializer = StringDeserializer::class)
-            .also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none" }
+            .also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none" },
     )
 
     createListener(applicationState) {
@@ -173,7 +173,7 @@ fun launchListeners(
         blockingApplicationLogic(
             kafkaAivenConsumer,
             applicationState,
-            journalServiceAiven
+            journalServiceAiven,
         )
     }
 }
@@ -181,7 +181,7 @@ fun launchListeners(
 suspend fun blockingApplicationLogic(
     consumer: KafkaConsumer<String, String>,
     applicationState: ApplicationState,
-    journalService: JournalService
+    journalService: JournalService,
 ) {
     while (applicationState.ready) {
         consumer.poll(Duration.ofSeconds(1)).forEach {
@@ -197,7 +197,7 @@ suspend fun blockingApplicationLogic(
                 mottakId = receivedSykmelding.navLogId,
                 orgNr = receivedSykmelding.legekontorOrgNr,
                 msgId = receivedSykmelding.msgId,
-                sykmeldingId = receivedSykmelding.sykmelding.id
+                sykmeldingId = receivedSykmelding.sykmelding.id,
             )
             withTimeout(Duration.ofSeconds(30)) {
                 journalService.onJournalRequest(receivedSykmelding, validationResult, loggingMeta)

@@ -35,7 +35,7 @@ class SortedPeriodeTest {
             legeHelsepersonellkategori = null,
             legeHprNr = null,
             vedlegg = null,
-            utenlandskSykmelding = null
+            utenlandskSykmelding = null,
         )
     }
 
@@ -43,19 +43,19 @@ class SortedPeriodeTest {
     internal fun `Should choose the correct fom and tom with one Periode`() {
         val periode = generatePeriode(
             fom = LocalDate.of(2019, 1, 1),
-            tom = LocalDate.of(2019, 1, 2)
+            tom = LocalDate.of(2019, 1, 2),
         )
         val receivedSykmelding = getReceivedSykemelding(listOf(periode))
 
         Assertions.assertEquals(
             LocalDate.of(2019, 1, 1),
-            receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeFOMDate().first().fom
+            receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeFOMDate().first().fom,
         )
 
         Assertions.assertEquals(
             LocalDate.of(2019, 1, 2),
             receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeTOMDate()
-                .last().tom
+                .last().tom,
         )
     }
 
@@ -63,11 +63,11 @@ class SortedPeriodeTest {
     internal fun `Should choose the correct fom and tom with one Periode with 2 periods`() {
         val periode = generatePeriode(
             fom = LocalDate.of(2019, 1, 1),
-            tom = LocalDate.of(2019, 1, 2)
+            tom = LocalDate.of(2019, 1, 2),
         )
         val periode2 = generatePeriode(
             fom = LocalDate.of(2019, 1, 3),
-            tom = LocalDate.of(2019, 1, 9)
+            tom = LocalDate.of(2019, 1, 9),
         )
 
         val receivedSykmelding = getReceivedSykemelding(listOf(periode2, periode))
@@ -75,11 +75,11 @@ class SortedPeriodeTest {
         Assertions.assertEquals(
             LocalDate.of(2019, 1, 1),
             receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeFOMDate()
-                .first().fom
+                .first().fom,
         )
         Assertions.assertEquals(
             LocalDate.of(2019, 1, 9),
-            receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeTOMDate().last().tom
+            receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeTOMDate().last().tom,
         )
     }
 
@@ -110,7 +110,7 @@ class SortedPeriodeTest {
         val periode2 = generatePeriode(
             fom = LocalDate.of(2019, 1, 3),
             tom = LocalDate.of(2019, 1, 4),
-            gradert = generateGradert(reisetilskudd = true, grad = 50)
+            gradert = generateGradert(reisetilskudd = true, grad = 50),
         )
 
         val receivedSykmelding = getReceivedSykemelding(listOf(periode2, periode))
@@ -125,7 +125,7 @@ class SortedPeriodeTest {
         val periode2 = generatePeriode(
             fom = LocalDate.of(2019, 1, 3),
             tom = LocalDate.of(2019, 1, 4),
-            gradert = generateGradert(reisetilskudd = true, grad = 50)
+            gradert = generateGradert(reisetilskudd = true, grad = 50),
         )
         val periode3 = generatePeriode(fom = LocalDate.of(2019, 1, 5), tom = LocalDate.of(2019, 2, 1))
 
@@ -141,7 +141,7 @@ class SortedPeriodeTest {
         val periode2 = generatePeriode(
             fom = LocalDate.of(2019, 1, 3),
             tom = LocalDate.of(2019, 1, 4),
-            gradert = generateGradert(reisetilskudd = true, grad = 50)
+            gradert = generateGradert(reisetilskudd = true, grad = 50),
         )
         val periode3 = generatePeriode(fom = LocalDate.of(2019, 1, 5), tom = LocalDate.of(2019, 2, 1))
 

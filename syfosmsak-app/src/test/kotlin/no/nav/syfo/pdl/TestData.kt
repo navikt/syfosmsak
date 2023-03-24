@@ -11,8 +11,8 @@ fun getPdlResponse(): GetPersonResponse {
     return GetPersonResponse(
         ResponseData(
             hentPerson = HentPerson(listOf(Navn("fornavn", null, "etternavn")), adressebeskyttelse = null),
-            hentIdenter = HentIdenter(listOf(PdlIdent(ident = "987654321", gruppe = "AKTORID")))
+            hentIdenter = HentIdenter(listOf(PdlIdent(ident = "987654321", gruppe = "AKTORID"))),
         ),
-        errors = null
+        errors = null,
     )
 }

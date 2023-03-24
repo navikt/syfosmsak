@@ -27,19 +27,19 @@ class JournalService(
     private val dokArkivClient: DokArkivClient,
     private val pdfgenClient: PdfgenClient,
     private val pdlPersonService: PdlPersonService,
-    private val bucketService: BucketService
+    private val bucketService: BucketService,
 ) {
     suspend fun onJournalRequest(
         receivedSykmelding: ReceivedSykmelding,
         validationResult: ValidationResult,
-        loggingMeta: LoggingMeta
+        loggingMeta: LoggingMeta,
     ) {
         wrapExceptions(loggingMeta) {
             log.info("Mottok en sykmelding, prover å lagre i Joark {}", StructuredArguments.fields(loggingMeta))
             sikkerlogg.info(
                 "Mottok en sykmelding for fnr {}, prover å lagre i Joark {}",
                 receivedSykmelding.personNrPasient,
-                StructuredArguments.fields(loggingMeta)
+                StructuredArguments.fields(loggingMeta),
             )
 
             val journalpostid = opprettEllerFinnPDFJournalpost(receivedSykmelding, validationResult, loggingMeta)
@@ -54,7 +54,7 @@ class JournalService(
                 log.error(
                     "Error sending to kafkatopic {} {}",
                     journalCreatedTopic,
-                    StructuredArguments.fields(loggingMeta)
+                    StructuredArguments.fields(loggingMeta),
                 )
                 throw ex
             }
@@ -63,7 +63,7 @@ class JournalService(
                 log.info(
                     "Melding lagret i Joark med journalpostId {}, {}",
                     journalpostid,
-                    StructuredArguments.fields(loggingMeta)
+                    StructuredArguments.fields(loggingMeta),
                 )
             }
         }
@@ -72,7 +72,7 @@ class JournalService(
     suspend fun opprettEllerFinnPDFJournalpost(
         receivedSykmelding: ReceivedSykmelding,
         validationResult: ValidationResult,
-        loggingMeta: LoggingMeta
+        loggingMeta: LoggingMeta,
     ): String {
         return if (skalOpprettePdf(receivedSykmelding.sykmelding.avsenderSystem)) {
             val vedleggListe: List<Vedlegg> = if (receivedSykmelding.vedlegg.isNullOrEmpty()) {
@@ -80,7 +80,7 @@ class JournalService(
             } else {
                 log.info(
                     "Sykmelding har ${receivedSykmelding.vedlegg!!.size} vedlegg {}",
-                    StructuredArguments.fields(loggingMeta)
+                    StructuredArguments.fields(loggingMeta),
                 )
                 receivedSykmelding.vedlegg!!.map {
                     bucketService.getVedleggFromBucket(it, loggingMeta)
@@ -110,10 +110,10 @@ class JournalService(
 
     fun getKafkaMessage(
         receivedSykmelding: ReceivedSykmelding,
-        journalpostid: String
+        journalpostid: String,
     ): JournalKafkaMessage = JournalKafkaMessage(
         journalpostKilde = "AS36",
         messageId = receivedSykmelding.msgId,
-        journalpostId = journalpostid
+        journalpostId = journalpostid,
     )
 }

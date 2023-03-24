@@ -34,7 +34,7 @@ fun main() {
         fellesformat = "",
         tssid = null,
         vedlegg = null,
-        utenlandskSykmelding = null
+        utenlandskSykmelding = null,
     )
     val validationResult = ValidationResult(
         status = Status.MANUAL_PROCESSING,
@@ -43,21 +43,21 @@ fun main() {
                 ruleName = "BEHANDLER_KI_NOT_USING_VALID_DIAGNOSECODE_TYPE",
                 messageForUser = "Den som skrev sykmeldingen mangler autorisasjon.",
                 messageForSender = "Behandler er manuellterapeut/kiropraktor eller fysioterapeut med autorisasjon har angitt annen diagnose enn kapitel L (muskel og skjelettsykdommer)",
-                ruleStatus = Status.MANUAL_PROCESSING
+                ruleStatus = Status.MANUAL_PROCESSING,
             ),
             RuleInfo(
                 ruleName = "NUMBER_OF_TREATMENT_DAYS_SET",
                 messageForUser = "Hvis behandlingsdager er angitt sendes meldingen til manuell behandling.",
                 messageForSender = "Hvis behandlingsdager er angitt sendes meldingen til manuell behandling.",
-                ruleStatus = Status.MANUAL_PROCESSING
-            )
-        )
+                ruleStatus = Status.MANUAL_PROCESSING,
+            ),
+        ),
     )
     val person = PdlPerson(
         navn = Navn("Fornavn", "Mellomnavnsen", "Etternavn"),
         fnr = "123456789",
         aktorId = null,
-        adressebeskyttelse = null
+        adressebeskyttelse = null,
     )
     val pdfPayload = createPdfPayload(receivedSykmelding, validationResult, person)
     val json = objectMapper.writeValueAsString(pdfPayload)

@@ -11,7 +11,7 @@ import no.nav.syfo.util.LoggingMeta
 
 class BucketService(
     private val bucketName: String,
-    private val storage: Storage
+    private val storage: Storage,
 ) {
     fun getVedleggFromBucket(key: String, loggingMeta: LoggingMeta): Vedlegg {
         val vedleggBlob = storage.get(bucketName, key)

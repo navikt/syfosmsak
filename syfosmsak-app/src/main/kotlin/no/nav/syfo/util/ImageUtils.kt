@@ -16,7 +16,6 @@ import java.io.OutputStream
 import javax.imageio.ImageIO
 
 fun imageToPDF(imageStream: InputStream, outputStream: OutputStream) {
-
     PDDocument().use { document ->
 
         val page = PDPage(PDRectangle.A4)
@@ -44,7 +43,7 @@ private fun toPortait(image: BufferedImage): BufferedImage {
     val rotateTransform = AffineTransform.getRotateInstance(
         Math.toRadians(90.0),
         (image.height / 2f).toDouble(),
-        (image.height / 2f).toDouble()
+        (image.height / 2f).toDouble(),
     )
 
     return AffineTransformOp(rotateTransform, TYPE_BILINEAR)

@@ -18,7 +18,7 @@ import no.nav.syfo.pdl.model.PdlPerson
 
 class PdfgenClient constructor(
     private val url: String,
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
 ) {
     suspend fun createPdf(payload: PdfPayload): ByteArray {
         val httpResponse = httpClient.post(url) {
@@ -37,14 +37,14 @@ class PdfgenClient constructor(
 fun createPdfPayload(
     receivedSykmelding: ReceivedSykmelding,
     validationResult: ValidationResult,
-    person: PdlPerson
+    person: PdlPerson,
 ): PdfPayload = PdfPayload(
     pasient = Pasient(
         fornavn = person.navn.fornavn,
         mellomnavn = person.navn.mellomnavn,
         etternavn = person.navn.etternavn,
         personnummer = receivedSykmelding.personNrPasient,
-        tlfNummer = receivedSykmelding.tlfPasient
+        tlfNummer = receivedSykmelding.tlfPasient,
     ),
     sykmelding = mapToSykmeldingUtenUlovligeTegn(receivedSykmelding.sykmelding),
     validationResult = validationResult,
@@ -52,7 +52,7 @@ fun createPdfPayload(
     behandlerKontorOrgName = receivedSykmelding.legekontorOrgName,
     merknader = receivedSykmelding.merknader,
     rulesetVersion = receivedSykmelding.rulesetVersion,
-    signerendBehandlerHprNr = receivedSykmelding.legeHprNr
+    signerendBehandlerHprNr = receivedSykmelding.legeHprNr,
 )
 
 fun mapToSykmeldingUtenUlovligeTegn(sykmelding: Sykmelding): Sykmelding {

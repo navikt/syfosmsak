@@ -11,7 +11,7 @@ import no.nav.syfo.util.LoggingMeta
 class PdlPersonService(
     private val pdlClient: PdlClient,
     private val accessTokenClientV2: AccessTokenClientV2,
-    private val pdlScope: String
+    private val pdlScope: String,
 ) {
     suspend fun getPdlPerson(ident: String, loggingMeta: LoggingMeta): PdlPerson {
         val accessToken = accessTokenClientV2.getAccessTokenV2(pdlScope)
@@ -41,7 +41,7 @@ class PdlPersonService(
             navn = getNavn(pdlResponse.data.hentPerson.navn[0]),
             aktorId = pdlResponse.data.hentIdenter.identer.firstOrNull { it.gruppe == AKTORID }?.ident,
             fnr = pdlResponse.data.hentIdenter.identer.firstOrNull { it.gruppe == FOLKEREGISTERIDENT }?.ident,
-            adressebeskyttelse = pdlResponse.data.hentPerson.adressebeskyttelse?.firstOrNull()?.gradering
+            adressebeskyttelse = pdlResponse.data.hentPerson.adressebeskyttelse?.firstOrNull()?.gradering,
         )
     }
 

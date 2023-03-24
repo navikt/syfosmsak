@@ -38,16 +38,17 @@ class DokArkivClient(
     private val url: String,
     private val accessTokenClientV2: AccessTokenClientV2,
     private val scope: String,
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
 ) {
     suspend fun createJournalpost(
         journalpostRequest: JournalpostRequest,
-        loggingMeta: LoggingMeta
+        loggingMeta: LoggingMeta,
     ): JournalpostResponse =
         try {
             log.info(
-                "Kall til dokarkiv Nav-Callid {}, {}", journalpostRequest.eksternReferanseId,
-                fields(loggingMeta)
+                "Kall til dokarkiv Nav-Callid {}, {}",
+                journalpostRequest.eksternReferanseId,
+                fields(loggingMeta),
             )
             val httpResponse = httpClient.post(url) {
                 contentType(ContentType.Application.Json)
@@ -73,17 +74,17 @@ fun createJournalpostPayload(
     pdf: ByteArray,
     validationResult: ValidationResult,
     vedlegg: List<Vedlegg>,
-    loggingMeta: LoggingMeta
+    loggingMeta: LoggingMeta,
 ) = JournalpostRequest(
     avsenderMottaker = if (receivedSykmelding.sykmelding.behandler.hpr != null) {
         createAvsenderMottakerValidHpr(
             receivedSykmelding,
-            receivedSykmelding.sykmelding.behandler.hpr!!.trim()
+            receivedSykmelding.sykmelding.behandler.hpr!!.trim(),
         ).also {
             log.info(
                 "Hpr nummer: {}, {}",
                 receivedSykmelding.sykmelding.behandler.hpr!!.trim(),
-                fields(loggingMeta)
+                fields(loggingMeta),
             )
         }
     } else {
@@ -94,24 +95,24 @@ fun createJournalpostPayload(
     },
     bruker = Bruker(
         id = receivedSykmelding.personNrPasient,
-        idType = "FNR"
+        idType = "FNR",
     ),
     dokumenter = leggtilDokument(
         msgId = receivedSykmelding.msgId,
         receivedSykmelding = receivedSykmelding,
         pdf = pdf,
         validationResult = validationResult,
-        vedleggListe = vedlegg
+        vedleggListe = vedlegg,
     ),
     eksternReferanseId = receivedSykmelding.sykmelding.id,
     journalfoerendeEnhet = "9999",
     journalpostType = "INNGAAENDE",
     kanal = "HELSENETTET",
     sak = Sak(
-        sakstype = "GENERELL_SAK"
+        sakstype = "GENERELL_SAK",
     ),
     tema = "SYM",
-    tittel = createTittleJournalpost(validationResult, receivedSykmelding)
+    tittel = createTittleJournalpost(validationResult, receivedSykmelding),
 )
 
 fun hprnummerMedRiktigLengdeOgFormat(hprnummer: String): String {
@@ -127,7 +128,7 @@ fun leggtilDokument(
     receivedSykmelding: ReceivedSykmelding,
     pdf: ByteArray,
     validationResult: ValidationResult,
-    vedleggListe: List<Vedlegg>?
+    vedleggListe: List<Vedlegg>?,
 ): List<Dokument> {
     val listDokument = ArrayList<Dokument>()
     listDokument.add(
@@ -137,18 +138,18 @@ fun leggtilDokument(
                     filnavn = "Sykmelding",
                     filtype = "PDFA",
                     variantformat = "ARKIV",
-                    fysiskDokument = pdf
+                    fysiskDokument = pdf,
                 ),
                 Dokumentvarianter(
                     filnavn = "Sykmelding json",
                     filtype = "JSON",
                     variantformat = "ORIGINAL",
-                    fysiskDokument = objectMapper.writeValueAsBytes(receivedSykmelding.sykmelding)
-                )
+                    fysiskDokument = objectMapper.writeValueAsBytes(receivedSykmelding.sykmelding),
+                ),
             ),
             tittel = createTittleJournalpost(validationResult, receivedSykmelding),
-            brevkode = "NAV 08-07.04 A"
-        )
+            brevkode = "NAV 08-07.04 A",
+        ),
     )
     if (!vedleggListe.isNullOrEmpty()) {
         val listVedleggDokumenter = ArrayList<Dokument>()
@@ -164,11 +165,11 @@ fun leggtilDokument(
                                 filtype = findFiltype(vedlegg),
                                 filnavn = "Vedlegg_nr_${index}_Sykmelding_$msgId",
                                 variantformat = "ARKIV",
-                                fysiskDokument = vedlegg.content
-                            )
+                                fysiskDokument = vedlegg.content,
+                            ),
                         ),
-                        tittel = "Vedlegg til sykmelding ${getFomTomTekst(receivedSykmelding)}"
-                    )
+                        tittel = "Vedlegg til sykmelding ${getFomTomTekst(receivedSykmelding)}",
+                    ),
                 )
             }
         listVedleggDokumenter.map { vedlegg ->
@@ -182,7 +183,7 @@ fun toGosysVedlegg(vedlegg: Vedlegg): GosysVedlegg {
     return GosysVedlegg(
         contentType = vedlegg.type,
         content = Base64.getMimeDecoder().decode(vedlegg.content.content),
-        description = vedlegg.description
+        description = vedlegg.description,
     )
 }
 
@@ -199,7 +200,7 @@ fun vedleggToPDF(vedlegg: GosysVedlegg): GosysVedlegg {
     return GosysVedlegg(
         content = image,
         contentType = "application/pdf",
-        description = vedlegg.description
+        description = vedlegg.description,
     )
 }
 
@@ -216,7 +217,7 @@ fun createAvsenderMottakerValidFnr(receivedSykmelding: ReceivedSykmelding): Avse
     id = receivedSykmelding.sykmelding.behandler.fnr,
     idType = "FNR",
     land = "Norge",
-    navn = receivedSykmelding.sykmelding.behandler.formatName()
+    navn = receivedSykmelding.sykmelding.behandler.formatName(),
 )
 
 fun createAvsenderMottakerValidHpr(receivedSykmelding: ReceivedSykmelding, hprnummer: String): AvsenderMottaker =
@@ -224,12 +225,12 @@ fun createAvsenderMottakerValidHpr(receivedSykmelding: ReceivedSykmelding, hprnu
         id = hprnummerMedRiktigLengdeOgFormat(hprnummer),
         idType = "HPRNR",
         land = "Norge",
-        navn = receivedSykmelding.sykmelding.behandler.formatName()
+        navn = receivedSykmelding.sykmelding.behandler.formatName(),
     )
 
 fun createAvsenderMottakerNotValidFnr(receivedSykmelding: ReceivedSykmelding): AvsenderMottaker = AvsenderMottaker(
     land = "Norge",
-    navn = receivedSykmelding.sykmelding.behandler.formatName()
+    navn = receivedSykmelding.sykmelding.behandler.formatName(),
 )
 
 fun createTittleJournalpost(validationResult: ValidationResult, receivedSykmelding: ReceivedSykmelding): String {

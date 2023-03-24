@@ -57,13 +57,13 @@ class JournalServiceTest {
             Navn("fornavn", null, "etternavn"),
             "fnr",
             "aktørid",
-            null
+            null,
         )
         coEvery { pdfgenClient.createPdf(any()) } returns "PDF".toByteArray(Charsets.UTF_8)
         coEvery { dokArkivClient.createJournalpost(any(), any()) } returns JournalpostResponse(
             dokumenter = emptyList(),
             journalpostId = journalpostId,
-            journalpostferdigstilt = true
+            journalpostferdigstilt = true,
         )
     }
 
@@ -80,9 +80,9 @@ class JournalServiceTest {
                     generateSykmelding(
                         avsenderSystem = AvsenderSystem(
                             "EPJ-systemet",
-                            "1"
-                        )
-                    )
+                            "1",
+                        ),
+                    ),
                 )
                 journalService.onJournalRequest(sykmelding, validationResult, loggingMeta)
             }
@@ -127,9 +127,9 @@ class JournalServiceTest {
             generateSykmelding(
                 avsenderSystem = AvsenderSystem(
                     "Papirsykmelding",
-                    journalpostIdPapirsykmelding
-                )
-            )
+                    journalpostIdPapirsykmelding,
+                ),
+            ),
         )
         runBlocking {
             val opprettetJournalpostId =
@@ -145,9 +145,9 @@ class JournalServiceTest {
             generateSykmelding(
                 avsenderSystem = AvsenderSystem(
                     "syk-dig",
-                    journalpostIdUtenlandskSykmelding
-                )
-            )
+                    journalpostIdUtenlandskSykmelding,
+                ),
+            ),
         ).copy(utenlandskSykmelding = UtenlandskSykmelding("GER", false))
         runBlocking {
             val opprettetJournalpostId =
@@ -162,9 +162,10 @@ class JournalServiceTest {
         coEvery { bucketService.getVedleggFromBucket(any(), any()) } returns Vedlegg(
             Content(
                 "Base64Container",
-                "base64"
+                "base64",
             ),
-            "application/pdf", "vedlegg2.pdf"
+            "application/pdf",
+            "vedlegg2.pdf",
         )
         val sykmelding = generateReceivedSykmelding(generateSykmelding()).copy(vedlegg = listOf("vedleggsid1"))
 
@@ -199,5 +200,5 @@ fun generateReceivedSykmelding(sykmelding: Sykmelding): ReceivedSykmelding =
         legeHelsepersonellkategori = null,
         legeHprNr = null,
         vedlegg = null,
-        utenlandskSykmelding = null
+        utenlandskSykmelding = null,
     )

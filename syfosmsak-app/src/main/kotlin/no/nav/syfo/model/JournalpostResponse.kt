@@ -8,12 +8,12 @@ data class JournalpostResponse(
     val journalpostId: String,
     val journalpostferdigstilt: Boolean,
     val journalstatus: String? = null,
-    val melding: String? = null
+    val melding: String? = null,
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class DokumentInfo(
     val brevkode: String? = null,
     val dokumentInfoId: String? = null,
-    val tittel: String? = null
+    val tittel: String? = null,
 )

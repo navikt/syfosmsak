@@ -10,7 +10,7 @@ data class PdfPayload(
     val behandlerKontorOrgName: String,
     val merknader: List<Merknad>?,
     val rulesetVersion: String?,
-    val signerendBehandlerHprNr: String?
+    val signerendBehandlerHprNr: String?,
 )
 
 data class Pasient(
@@ -18,5 +18,5 @@ data class Pasient(
     val mellomnavn: String?,
     val etternavn: String,
     val personnummer: String,
-    val tlfNummer: String?
+    val tlfNummer: String?,
 )

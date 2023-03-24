@@ -43,7 +43,7 @@ fun main() {
     val applicationState = ApplicationState()
     val applicationEngine = createApplicationEngine(
         env,
-        applicationState
+        applicationState,
     )
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
 
@@ -60,18 +60,18 @@ fun startKafkaAivenStream(env: Environment, applicationState: ApplicationState) 
         listOf(
             env.okSykmeldingTopic,
             env.avvistSykmeldingTopic,
-            env.manuellSykmeldingTopic
+            env.manuellSykmeldingTopic,
         ),
-        Consumed.with(Serdes.String(), Serdes.String())
+        Consumed.with(Serdes.String(), Serdes.String()),
     ).filter { _, value ->
         value?.let { objectMapper.readValue<ReceivedSykmelding>(value).skalBehandles() } ?: true
     }
 
     val behandlingsutfallStream = streamsBuilder.stream(
         listOf(
-            env.behandlingsUtfallTopic
+            env.behandlingsUtfallTopic,
         ),
-        Consumed.with(Serdes.String(), Serdes.String())
+        Consumed.with(Serdes.String(), Serdes.String()),
     ).filter { _, value ->
         !(value?.let { objectMapper.readValue<ValidationResult>(value).ruleHits.any { it.ruleName == "UNDER_BEHANDLING" } } ?: false)
     }
@@ -85,11 +85,11 @@ fun startKafkaAivenStream(env: Environment, applicationState: ApplicationState) 
             objectMapper.writeValueAsString(
                 BehandlingsUtfallReceivedSykmelding(
                     receivedSykmelding = sm2013.toByteArray(Charsets.UTF_8),
-                    behandlingsUtfall = behandling.toByteArray(Charsets.UTF_8)
-                )
+                    behandlingsUtfall = behandling.toByteArray(Charsets.UTF_8),
+                ),
             )
         },
-        joinWindow
+        joinWindow,
     ).to(env.privatSykmeldingSak)
 
     val stream = KafkaStreams(streamsBuilder.build(), streamProperties)

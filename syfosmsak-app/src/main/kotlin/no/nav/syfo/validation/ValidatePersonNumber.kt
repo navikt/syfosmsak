@@ -6,8 +6,9 @@ val lookup1: IntArray = intArrayOf(3, 7, 6, 1, 8, 9, 4, 5, 2, 0)
 val lookup2: IntArray = intArrayOf(5, 4, 3, 2, 7, 6, 5, 4, 3, 2)
 
 fun validatePersonDNumberMod11(personNumber: String): Boolean {
-    if (personNumber.length != 11)
+    if (personNumber.length != 11) {
         return false
+    }
 
     var checksum1 = 0
     var checksum2 = 0

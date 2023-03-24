@@ -13,7 +13,7 @@ data class Environment(
     val pdlScope: String = getEnvVar("PDL_SCOPE"),
     val privatSykmeldingSak: String = "teamsykmelding.privat-sykmelding-sak",
     val oppgaveJournalOpprettet: String = "teamsykmelding.oppgave-journal-opprettet",
-    val sykmeldingVedleggBucketName: String = getEnvVar("SYKMELDING_VEDLEGG_BUCKET_NAME")
+    val sykmeldingVedleggBucketName: String = getEnvVar("SYKMELDING_VEDLEGG_BUCKET_NAME"),
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =

@@ -37,7 +37,6 @@ internal class PdlPersonServiceTest {
         coEvery { accessTokenClient.getAccessTokenV2(any()) } returns "token"
 
         runBlocking {
-
             val person = pdlService.getPdlPerson("01245678901", loggingMeta)
             Assertions.assertEquals("fornavn", person.navn.fornavn)
             Assertions.assertEquals(null, person.navn.mellomnavn)
@@ -48,7 +47,6 @@ internal class PdlPersonServiceTest {
 
     @Test
     internal fun `Skal feile naar person ikke finnes`() {
-
         coEvery { pdlClient.getPerson(any(), any()) } returns GetPersonResponse(ResponseData(null, null), errors = null)
 
         assertThrows<RuntimeException> {
@@ -63,11 +61,12 @@ internal class PdlPersonServiceTest {
         coEvery { pdlClient.getPerson(any(), any()) } returns GetPersonResponse(
             ResponseData(
                 hentPerson = HentPerson(
-                    navn = emptyList(), adressebeskyttelse = null
+                    navn = emptyList(),
+                    adressebeskyttelse = null,
                 ),
-                hentIdenter = HentIdenter(emptyList())
+                hentIdenter = HentIdenter(emptyList()),
             ),
-            errors = null
+            errors = null,
         )
 
         assertThrows<RuntimeException> {
@@ -82,11 +81,12 @@ internal class PdlPersonServiceTest {
         coEvery { pdlClient.getPerson(any(), any()) } returns GetPersonResponse(
             ResponseData(
                 hentPerson = HentPerson(
-                    navn = null, adressebeskyttelse = null
+                    navn = null,
+                    adressebeskyttelse = null,
                 ),
-                hentIdenter = HentIdenter(listOf(PdlIdent(ident = "987654321", gruppe = "foo")))
+                hentIdenter = HentIdenter(listOf(PdlIdent(ident = "987654321", gruppe = "foo"))),
             ),
-            errors = null
+            errors = null,
         )
 
         assertThrows<RuntimeException> {
@@ -102,11 +102,11 @@ internal class PdlPersonServiceTest {
             ResponseData(
                 hentPerson = HentPerson(
                     navn = listOf(Navn("fornavn", "mellomnavn", "etternavn")),
-                    adressebeskyttelse = null
+                    adressebeskyttelse = null,
                 ),
-                hentIdenter = HentIdenter(emptyList())
+                hentIdenter = HentIdenter(emptyList()),
             ),
-            errors = null
+            errors = null,
         )
         assertThrows<RuntimeException> {
             runBlocking {

@@ -14,9 +14,9 @@ internal class PdfgenPayloadTest {
                 "6.2.1" to SporsmalSvar(
                     sporsmal = "Beskriv kort sykehistorie, symptomer og funn i dagens situasjon.",
                     svar = "\uFEFF_ •• l\\iiJr~Svar med skumle tegn",
-                    restriksjoner = emptyList()
-                )
-            )
+                    restriksjoner = emptyList(),
+                ),
+            ),
         )
         val sykmelding = generateSykmelding().copy(utdypendeOpplysninger = utdypendeOpplysninger)
 
@@ -24,7 +24,7 @@ internal class PdfgenPayloadTest {
 
         Assertions.assertEquals(
             "_ •• l\\iiJr~Svar med skumle tegn",
-            oppdatertSykmelding.utdypendeOpplysninger["6.2"]?.get("6.2.1")?.svar
+            oppdatertSykmelding.utdypendeOpplysninger["6.2"]?.get("6.2.1")?.svar,
         )
     }
 
@@ -35,9 +35,9 @@ internal class PdfgenPayloadTest {
                 "6.2.1" to SporsmalSvar(
                     sporsmal = "Beskriv kort sykehistorie, symptomer og funn i dagens situasjon.",
                     svar = "Svar uten skumle tegn",
-                    restriksjoner = emptyList()
-                )
-            )
+                    restriksjoner = emptyList(),
+                ),
+            ),
         )
         val sykmelding = generateSykmelding().copy(utdypendeOpplysninger = utdypendeOpplysninger)
 
@@ -45,7 +45,7 @@ internal class PdfgenPayloadTest {
 
         Assertions.assertEquals(
             "Svar uten skumle tegn",
-            oppdatertSykmelding.utdypendeOpplysninger["6.2"]?.get("6.2.1")?.svar
+            oppdatertSykmelding.utdypendeOpplysninger["6.2"]?.get("6.2.1")?.svar,
         )
     }
 }
