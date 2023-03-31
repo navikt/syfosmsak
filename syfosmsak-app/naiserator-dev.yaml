@@ -52,6 +52,9 @@ spec:
         - application: smpdfgen
           namespace: teamsykmelding
           cluster: dev-gcp
+      external:
+        - host: pdl-api.dev-fss-pub.nais.io
+        - host: dokarkiv.dev-fss-pub.nais.io
   env:
     - name: DOK_ARKIV_URL
       value: https://dokarkiv.dev-fss-pub.nais.io/rest/journalpostapi/v1/journalpost
