@@ -15,12 +15,12 @@ val prometheusVersion = "0.16.0"
 val smCommonVersion = "1.9df1108"
 val junitJupiterVersion = "5.9.2"
 val ioMockVersion = "1.13.4"
-val kotlinVersion = "1.8.10"
+val kotlinVersion = "1.8.20"
 val pdfboxVersion = "2.0.24"
 val googleCloudStorageVersion = "2.3.0"
 
 plugins {
-    kotlin("jvm") version "1.8.10"
+    kotlin("jvm") version "1.8.20"
     id("org.jmailen.kotlinter") version "3.14.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
