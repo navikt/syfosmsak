@@ -1,4 +1,4 @@
-name: CodeQL
+name: CodeQL app
 on:
   push:
     branches:
