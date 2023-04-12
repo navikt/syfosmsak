@@ -1,7 +1,5 @@
 package no.nav.syfo.validation
 
-import java.time.LocalDate
-
 val lookup1: IntArray = intArrayOf(3, 7, 6, 1, 8, 9, 4, 5, 2, 0)
 val lookup2: IntArray = intArrayOf(5, 4, 3, 2, 7, 6, 5, 4, 3, 2)
 
@@ -38,9 +36,6 @@ fun validatePersonAndPersonDNumberRange(personNumber: String): Boolean {
 fun validatePersonAndDNumber(personNumber: String): Boolean =
     validatePersonDNumberMod11(personNumber) && validatePersonAndPersonDNumberRange(personNumber)
 
-fun validatePersonAndDNumber11Digits(personNumber: String): Boolean =
-    personNumber.length == 11
-
 fun validatePersonNumberRange(personNumberFirstAndSecoundChar: String): Boolean {
     return personNumberFirstAndSecoundChar.toInt() in 1..31
 }
@@ -48,33 +43,3 @@ fun validatePersonNumberRange(personNumberFirstAndSecoundChar: String): Boolean 
 fun validatePersonDNumberRange(personNumberFirstAndSecoundChar: String): Boolean {
     return personNumberFirstAndSecoundChar.toInt() in 41..71
 }
-fun extractBornDate(personIdent: String): LocalDate =
-    LocalDate.of(extractBornYear(personIdent), extractBornMonth(personIdent), extractBornDay(personIdent))
-
-fun extractBornYear(personIdent: String): Int {
-    val lastTwoDigitsOfYear = extractLastTwoDigistOfyear(personIdent)
-    val individualDigits = extractIndividualDigits(personIdent)
-    if (lastTwoDigitsOfYear in (0..99) && individualDigits in (0..499)) {
-        return 1900 + lastTwoDigitsOfYear
-    }
-
-    if (lastTwoDigitsOfYear in (54..99) && individualDigits in 500..749) {
-        return 1800 + lastTwoDigitsOfYear
-    }
-
-    if (lastTwoDigitsOfYear in (0..39) && individualDigits in 500..999) {
-        return 2000 + lastTwoDigitsOfYear
-    }
-    return 1900 + lastTwoDigitsOfYear
-}
-
-fun extractBornDay(personIdent: String): Int {
-    val day = personIdent.substring(0..1).toInt()
-    return if (day < 40) day else day - 40
-}
-
-fun extractBornMonth(personIdent: String): Int = personIdent.substring(2..3).toInt()
-
-fun extractIndividualDigits(personIdent: String): Int = personIdent.substring(6, 9).toInt()
-
-fun extractLastTwoDigistOfyear(personIdent: String): Int = personIdent.substring(4, 6).toInt()
