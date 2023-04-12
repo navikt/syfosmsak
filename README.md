@@ -2,7 +2,7 @@
 
 # SYFO sykmelding journaling
 This is a simple application who takes the sykmelding2013 XML document, generates a PDF and sends it to Joark to
-persist it
+persist
 
 ## Technologies used
 * Kotlin
