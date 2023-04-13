@@ -16,7 +16,7 @@ val smCommonVersion = "1.9df1108"
 val junitJupiterVersion = "5.9.2"
 val ioMockVersion = "1.13.5"
 val kotlinVersion = "1.8.20"
-val pdfboxVersion = "2.0.27"
+val pdfboxVersion = "2.0.28"
 val googleCloudStorageVersion = "2.21.0"
 
 plugins {
