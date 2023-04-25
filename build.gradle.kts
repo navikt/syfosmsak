@@ -15,7 +15,7 @@ val prometheusVersion = "0.16.0"
 val smCommonVersion = "1.9df1108"
 val junitJupiterVersion = "5.9.2"
 val ioMockVersion = "1.13.5"
-val kotlinVersion = "1.8.20"
+val kotlinVersion = "1.8.21"
 val pdfboxVersion = "2.0.28"
 val googleCloudStorageVersion = "2.22.0"
 
