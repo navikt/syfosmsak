@@ -115,8 +115,8 @@ fun main() {
         }
         install(HttpTimeout) {
             socketTimeoutMillis = 120_000
-            connectTimeoutMillis = 40_000
-            requestTimeoutMillis = 40_000
+            connectTimeoutMillis = 60_000
+            requestTimeoutMillis = 60_000
         }
     }
 
