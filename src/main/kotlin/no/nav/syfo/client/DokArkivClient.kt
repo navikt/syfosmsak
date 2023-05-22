@@ -52,7 +52,7 @@ class DokArkivClient(
             )
             val httpResponse = httpClient.post(url) {
                 contentType(ContentType.Application.Json)
-                header("Authorization", "Bearer ${accessTokenClientV2.getAccessTokenV2(scope)}")
+                header("Authorization", "Bearer ${accessTokenClientV2.getAccessTokenV2(scope, loggingMeta)}")
                 header("Nav-Callid", journalpostRequest.eksternReferanseId)
                 setBody(journalpostRequest)
                 parameter("forsoekFerdigstill", true)
@@ -64,7 +64,7 @@ class DokArkivClient(
                 throw RuntimeException("Mottok uventet statuskode fra dokarkiv: ${httpResponse.status}")
             }
         } catch (e: Exception) {
-            log.warn("Oppretting av journalpost feilet: ${e.message}, {}", fields(loggingMeta))
+            log.error("Oppretting av journalpost feilet: ${e.message}, {}", fields(loggingMeta))
             throw e
         }
 }

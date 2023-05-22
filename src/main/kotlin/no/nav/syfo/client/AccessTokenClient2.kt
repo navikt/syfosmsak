@@ -12,7 +12,9 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.Parameters
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.log
+import no.nav.syfo.util.LoggingMeta
 import java.time.Instant
 
 class AccessTokenClientV2(
@@ -26,15 +28,15 @@ class AccessTokenClientV2(
     @Volatile
     private var tokenMap = HashMap<String, AadAccessTokenMedExpiry>()
 
-    suspend fun getAccessTokenV2(resource: String): String {
-        log.debug("Forsøker å hente nytt token fra Azure AD")
+    suspend fun getAccessTokenV2(resource: String, loggingMeta: LoggingMeta): String {
+        log.info("Forsøker å hente nytt token fra Azure AD {}", StructuredArguments.fields(loggingMeta))
         val omToMinutter = Instant.now().plusSeconds(120L)
         return mutex.withLock {
             (
                 tokenMap[resource]
                     ?.takeUnless { it.expiresOn.isBefore(omToMinutter) }
                     ?: run {
-                        log.debug("Henter nytt token fra Azure AD")
+                        log.info("Henter nytt token fra Azure AD {}", StructuredArguments.fields(loggingMeta))
                         val response: AadAccessTokenV2 = httpClient.post(aadAccessTokenUrl) {
                             accept(ContentType.Application.Json)
                             method = HttpMethod.Post
@@ -55,7 +57,7 @@ class AccessTokenClientV2(
                             expiresOn = Instant.now().plusSeconds(response.expires_in.toLong()),
                         )
                         tokenMap[resource] = tokenMedExpiry
-                        log.debug("Har hentet accesstoken")
+                        log.info("Har hentet nytt token fra Azure AD {}", StructuredArguments.fields(loggingMeta))
                         return@run tokenMedExpiry
                     }
                 ).access_token

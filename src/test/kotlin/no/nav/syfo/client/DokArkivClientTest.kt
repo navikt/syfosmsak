@@ -90,7 +90,7 @@ internal class DokArkivClientTest {
 
     @Test
     internal fun `Happy-case`() {
-        coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "Token"
+        coEvery { accessTokenClientV2.getAccessTokenV2(any(), any()) } returns "Token"
 
         runBlocking {
             val jpResponse = dokArkivClient.createJournalpost(
@@ -107,7 +107,7 @@ internal class DokArkivClientTest {
 
     @Test
     internal fun `Feiler ikke ved duplikat`() {
-        coEvery { accessTokenClientV2.getAccessTokenV2(any()) } returns "Token"
+        coEvery { accessTokenClientV2.getAccessTokenV2(any(), any()) } returns "Token"
 
         runBlocking {
             val jpResponse = dokArkivClient.createJournalpost(

@@ -34,7 +34,7 @@ internal class PdlPersonServiceTest {
     @Test
     internal fun `Hent person fra pdl uten fortrolig adresse`() {
         coEvery { pdlClient.getPerson(any(), any()) } returns getPdlResponse()
-        coEvery { accessTokenClient.getAccessTokenV2(any()) } returns "token"
+        coEvery { accessTokenClient.getAccessTokenV2(any(), any()) } returns "token"
 
         runBlocking {
             val person = pdlService.getPdlPerson("01245678901", loggingMeta)
