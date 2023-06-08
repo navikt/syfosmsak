@@ -17,7 +17,7 @@ val junitJupiterVersion = "5.9.3"
 val ioMockVersion = "1.13.5"
 val kotlinVersion = "1.8.22"
 val pdfboxVersion = "2.0.28"
-val googleCloudStorageVersion = "2.22.3"
+val googleCloudStorageVersion = "2.22.4"
 
 plugins {
     kotlin("jvm") version "1.8.22"
