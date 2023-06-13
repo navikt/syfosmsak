@@ -7,7 +7,7 @@ version = "1.0.0"
 
 val coroutinesVersion = "1.7.1"
 val jacksonVersion = "2.15.2"
-val kafkaVersion = "3.4.1"
+val kafkaVersion = "3.5.0"
 val ktorVersion = "2.3.1"
 val logstashLogbackEncoder = "7.3"
 val logbackVersion = "1.4.7"
