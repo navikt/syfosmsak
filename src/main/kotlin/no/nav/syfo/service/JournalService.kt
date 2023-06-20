@@ -35,19 +35,33 @@ class JournalService(
         loggingMeta: LoggingMeta,
     ) {
         wrapExceptions(loggingMeta) {
-            log.info("Mottok en sykmelding, prover å lagre i Joark {}", StructuredArguments.fields(loggingMeta))
+            log.info(
+                "Mottok en sykmelding, prover å lagre i Joark {}",
+                StructuredArguments.fields(loggingMeta)
+            )
             sikkerlogg.info(
                 "Mottok en sykmelding for fnr {}, prover å lagre i Joark {}",
                 receivedSykmelding.personNrPasient,
                 StructuredArguments.fields(loggingMeta),
             )
 
-            val journalpostid = opprettEllerFinnPDFJournalpost(receivedSykmelding, validationResult, loggingMeta)
-            log.info("Found journalpostid $journalpostid {}", StructuredArguments.fields(loggingMeta))
+            val journalpostid =
+                opprettEllerFinnPDFJournalpost(receivedSykmelding, validationResult, loggingMeta)
+            log.info(
+                "Found journalpostid $journalpostid {}",
+                StructuredArguments.fields(loggingMeta)
+            )
             val registerJournal = getKafkaMessage(receivedSykmelding, journalpostid)
 
             try {
-                producer.send(ProducerRecord(journalCreatedTopic, receivedSykmelding.sykmelding.id, registerJournal))
+                producer
+                    .send(
+                        ProducerRecord(
+                            journalCreatedTopic,
+                            receivedSykmelding.sykmelding.id,
+                            registerJournal
+                        )
+                    )
                     .get()
                 log.info("message sendt to kafka {}", StructuredArguments.fields(loggingMeta))
             } catch (ex: Exception) {
@@ -75,45 +89,62 @@ class JournalService(
         loggingMeta: LoggingMeta,
     ): String {
         return if (skalOpprettePdf(receivedSykmelding.sykmelding.avsenderSystem)) {
-            val vedleggListe: List<Vedlegg> = if (receivedSykmelding.vedlegg.isNullOrEmpty()) {
-                emptyList()
-            } else {
-                log.info(
-                    "Sykmelding har ${receivedSykmelding.vedlegg!!.size} vedlegg {}",
-                    StructuredArguments.fields(loggingMeta),
-                )
-                receivedSykmelding.vedlegg!!.map {
-                    bucketService.getVedleggFromBucket(it, loggingMeta)
+            val vedleggListe: List<Vedlegg> =
+                if (receivedSykmelding.vedlegg.isNullOrEmpty()) {
+                    emptyList()
+                } else {
+                    log.info(
+                        "Sykmelding har ${receivedSykmelding.vedlegg!!.size} vedlegg {}",
+                        StructuredArguments.fields(loggingMeta),
+                    )
+                    receivedSykmelding.vedlegg!!.map {
+                        bucketService.getVedleggFromBucket(it, loggingMeta)
+                    }
                 }
-            }
-            val patient = pdlPersonService.getPdlPerson(receivedSykmelding.personNrPasient, loggingMeta)
+            val patient =
+                pdlPersonService.getPdlPerson(receivedSykmelding.personNrPasient, loggingMeta)
             log.info("Found patient {}", StructuredArguments.fields(loggingMeta))
             val pdfPayload = createPdfPayload(receivedSykmelding, validationResult, patient)
 
             val pdf = pdfgenClient.createPdf(pdfPayload)
             log.info("PDF generert {}", StructuredArguments.fields(loggingMeta))
 
-            val journalpostPayload = createJournalpostPayload(receivedSykmelding, pdf, validationResult, vedleggListe, loggingMeta)
-            sikkerlogg.info("Journalpost avsender: " + journalpostPayload.avsenderMottaker.toString() + "{}", StructuredArguments.fields(loggingMeta))
+            val journalpostPayload =
+                createJournalpostPayload(
+                    receivedSykmelding,
+                    pdf,
+                    validationResult,
+                    vedleggListe,
+                    loggingMeta
+                )
+            sikkerlogg.info(
+                "Journalpost avsender: " + journalpostPayload.avsenderMottaker.toString() + "{}",
+                StructuredArguments.fields(loggingMeta)
+            )
             val journalpost = dokArkivClient.createJournalpost(journalpostPayload, loggingMeta)
 
             journalpost.journalpostId
         } else {
-            log.info("Oppretter ikke ny pdf for papirsykmelding {}", StructuredArguments.fields(loggingMeta))
+            log.info(
+                "Oppretter ikke ny pdf for papirsykmelding {}",
+                StructuredArguments.fields(loggingMeta)
+            )
             receivedSykmelding.sykmelding.avsenderSystem.versjon
         }
     }
 
     private fun skalOpprettePdf(avsenderSystem: AvsenderSystem): Boolean {
-        return !((avsenderSystem.navn == "Papirsykmelding" || avsenderSystem.navn == "syk-dig") && avsenderSystem.versjon != "1")
+        return !((avsenderSystem.navn == "Papirsykmelding" || avsenderSystem.navn == "syk-dig") &&
+            avsenderSystem.versjon != "1")
     }
 
     fun getKafkaMessage(
         receivedSykmelding: ReceivedSykmelding,
         journalpostid: String,
-    ): JournalKafkaMessage = JournalKafkaMessage(
-        journalpostKilde = "AS36",
-        messageId = receivedSykmelding.msgId,
-        journalpostId = journalpostid,
-    )
+    ): JournalKafkaMessage =
+        JournalKafkaMessage(
+            journalpostKilde = "AS36",
+            messageId = receivedSykmelding.msgId,
+            journalpostId = journalpostid,
+        )
 }

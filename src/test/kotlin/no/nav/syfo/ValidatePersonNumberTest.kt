@@ -1,10 +1,10 @@
 package no.nav.syfo
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import no.nav.syfo.validation.validatePersonAndDNumber
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 val personNumberDateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("ddMMyy")
 
@@ -25,12 +25,11 @@ internal class ValidatePersonNumberTest {
 }
 
 fun generatePersonNumber(bornDate: LocalDate, useDNumber: Boolean = false): String {
-    val personDate = bornDate.format(personNumberDateFormat).let {
-        if (useDNumber) "${it[0] + 4}${it.substring(1)}" else it
-    }
+    val personDate =
+        bornDate.format(personNumberDateFormat).let {
+            if (useDNumber) "${it[0] + 4}${it.substring(1)}" else it
+        }
     return (if (bornDate.year >= 2000) (75011..99999) else (11111..50099))
         .map { "$personDate$it" }
-        .first {
-            validatePersonAndDNumber(it)
-        }
+        .first { validatePersonAndDNumber(it) }
 }

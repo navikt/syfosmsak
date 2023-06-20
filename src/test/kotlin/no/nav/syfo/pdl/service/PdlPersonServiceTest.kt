@@ -47,71 +47,71 @@ internal class PdlPersonServiceTest {
 
     @Test
     internal fun `Skal feile naar person ikke finnes`() {
-        coEvery { pdlClient.getPerson(any(), any()) } returns GetPersonResponse(ResponseData(null, null), errors = null)
+        coEvery { pdlClient.getPerson(any(), any()) } returns
+            GetPersonResponse(ResponseData(null, null), errors = null)
 
         assertThrows<RuntimeException> {
-            runBlocking {
-                pdlService.getPdlPerson("123", loggingMeta)
-            }
+            runBlocking { pdlService.getPdlPerson("123", loggingMeta) }
         }
     }
 
     @Test
     internal fun `Skal feile naar navn er tom liste`() {
-        coEvery { pdlClient.getPerson(any(), any()) } returns GetPersonResponse(
-            ResponseData(
-                hentPerson = HentPerson(
-                    navn = emptyList(),
-                    adressebeskyttelse = null,
+        coEvery { pdlClient.getPerson(any(), any()) } returns
+            GetPersonResponse(
+                ResponseData(
+                    hentPerson =
+                        HentPerson(
+                            navn = emptyList(),
+                            adressebeskyttelse = null,
+                        ),
+                    hentIdenter = HentIdenter(emptyList()),
                 ),
-                hentIdenter = HentIdenter(emptyList()),
-            ),
-            errors = null,
-        )
+                errors = null,
+            )
 
         assertThrows<RuntimeException> {
-            runBlocking {
-                pdlService.getPdlPerson("123", loggingMeta)
-            }
+            runBlocking { pdlService.getPdlPerson("123", loggingMeta) }
         }
     }
 
     @Test
     internal fun `Skal feile naar navn ikke finnes`() {
-        coEvery { pdlClient.getPerson(any(), any()) } returns GetPersonResponse(
-            ResponseData(
-                hentPerson = HentPerson(
-                    navn = null,
-                    adressebeskyttelse = null,
+        coEvery { pdlClient.getPerson(any(), any()) } returns
+            GetPersonResponse(
+                ResponseData(
+                    hentPerson =
+                        HentPerson(
+                            navn = null,
+                            adressebeskyttelse = null,
+                        ),
+                    hentIdenter =
+                        HentIdenter(listOf(PdlIdent(ident = "987654321", gruppe = "foo"))),
                 ),
-                hentIdenter = HentIdenter(listOf(PdlIdent(ident = "987654321", gruppe = "foo"))),
-            ),
-            errors = null,
-        )
+                errors = null,
+            )
 
         assertThrows<RuntimeException> {
-            runBlocking {
-                pdlService.getPdlPerson("123", loggingMeta)
-            }
+            runBlocking { pdlService.getPdlPerson("123", loggingMeta) }
         }
     }
 
     @Test
     internal fun `Skal feile naar identer ikke finnes`() {
-        coEvery { pdlClient.getPerson(any(), any()) } returns GetPersonResponse(
-            ResponseData(
-                hentPerson = HentPerson(
-                    navn = listOf(Navn("fornavn", "mellomnavn", "etternavn")),
-                    adressebeskyttelse = null,
+        coEvery { pdlClient.getPerson(any(), any()) } returns
+            GetPersonResponse(
+                ResponseData(
+                    hentPerson =
+                        HentPerson(
+                            navn = listOf(Navn("fornavn", "mellomnavn", "etternavn")),
+                            adressebeskyttelse = null,
+                        ),
+                    hentIdenter = HentIdenter(emptyList()),
                 ),
-                hentIdenter = HentIdenter(emptyList()),
-            ),
-            errors = null,
-        )
+                errors = null,
+            )
         assertThrows<RuntimeException> {
-            runBlocking {
-                pdlService.getPdlPerson("123", loggingMeta)
-            }
+            runBlocking { pdlService.getPdlPerson("123", loggingMeta) }
         }
     }
 }

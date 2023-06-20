@@ -1,12 +1,5 @@
 package no.nav.syfo.util
 
-import org.apache.pdfbox.pdmodel.PDDocument
-import org.apache.pdfbox.pdmodel.PDPage
-import org.apache.pdfbox.pdmodel.PDPageContentStream
-import org.apache.pdfbox.pdmodel.common.PDRectangle
-import org.apache.pdfbox.pdmodel.graphics.image.JPEGFactory
-import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
-import org.apache.pdfbox.util.Matrix
 import java.awt.geom.AffineTransform
 import java.awt.image.AffineTransformOp
 import java.awt.image.AffineTransformOp.TYPE_BILINEAR
@@ -14,10 +7,16 @@ import java.awt.image.BufferedImage
 import java.io.InputStream
 import java.io.OutputStream
 import javax.imageio.ImageIO
+import org.apache.pdfbox.pdmodel.PDDocument
+import org.apache.pdfbox.pdmodel.PDPage
+import org.apache.pdfbox.pdmodel.PDPageContentStream
+import org.apache.pdfbox.pdmodel.common.PDRectangle
+import org.apache.pdfbox.pdmodel.graphics.image.JPEGFactory
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
+import org.apache.pdfbox.util.Matrix
 
 fun imageToPDF(imageStream: InputStream, outputStream: OutputStream) {
     PDDocument().use { document ->
-
         val page = PDPage(PDRectangle.A4)
         document.addPage(page)
         val image = toPortait(ImageIO.read(imageStream))
@@ -40,11 +39,12 @@ private fun toPortait(image: BufferedImage): BufferedImage {
         return image
     }
 
-    val rotateTransform = AffineTransform.getRotateInstance(
-        Math.toRadians(90.0),
-        (image.height / 2f).toDouble(),
-        (image.height / 2f).toDouble(),
-    )
+    val rotateTransform =
+        AffineTransform.getRotateInstance(
+            Math.toRadians(90.0),
+            (image.height / 2f).toDouble(),
+            (image.height / 2f).toDouble(),
+        )
 
     return AffineTransformOp(rotateTransform, TYPE_BILINEAR)
         .filter(image, BufferedImage(image.height, image.width, image.type))

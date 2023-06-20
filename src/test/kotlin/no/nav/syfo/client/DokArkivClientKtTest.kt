@@ -11,7 +11,9 @@ internal class DokArkivClientKtTest {
     @Test
     internal fun `Returnerer samme vedlegg hvis vedlegget er PDF`() {
         val vedleggMessage: VedleggMessage =
-            objectMapper.readValue(DokArkivClientTest::class.java.getResourceAsStream("/vedlegg_pdf.json")!!)
+            objectMapper.readValue(
+                DokArkivClientTest::class.java.getResourceAsStream("/vedlegg_pdf.json")!!
+            )
         val gosysVedlegg = toGosysVedlegg(vedleggMessage.vedlegg)
 
         val oppdatertVedlegg = vedleggToPDF(gosysVedlegg)
@@ -22,7 +24,9 @@ internal class DokArkivClientKtTest {
     @Test
     internal fun `Konverterer til PDF hvis vedlegget ikke er PDF`() {
         val vedleggMessage: VedleggMessage =
-            objectMapper.readValue(DokArkivClientTest::class.java.getResourceAsStream("/vedlegg_bilde.json")!!)
+            objectMapper.readValue(
+                DokArkivClientTest::class.java.getResourceAsStream("/vedlegg_bilde.json")!!
+            )
         val gosysVedlegg = toGosysVedlegg(vedleggMessage.vedlegg)
 
         val oppdatertVedlegg = vedleggToPDF(gosysVedlegg)

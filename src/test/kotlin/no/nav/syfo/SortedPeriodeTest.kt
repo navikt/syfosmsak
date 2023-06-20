@@ -1,5 +1,7 @@
 package no.nav.syfo
 
+import java.time.LocalDate
+import java.time.LocalDateTime
 import no.nav.syfo.client.createTittleJournalpost
 import no.nav.syfo.client.sortedSykmeldingPeriodeFOMDate
 import no.nav.syfo.client.sortedSykmeldingPeriodeTOMDate
@@ -9,12 +11,12 @@ import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
-import java.time.LocalDateTime
 
 class SortedPeriodeTest {
 
-    fun getReceivedSykemelding(perioder: List<Periode> = listOf(generatePeriode())): ReceivedSykmelding {
+    fun getReceivedSykemelding(
+        perioder: List<Periode> = listOf(generatePeriode())
+    ): ReceivedSykmelding {
         return ReceivedSykmelding(
             sykmelding = generateSykmelding(perioder = perioder),
             personNrPasient = "1231231",
@@ -41,10 +43,11 @@ class SortedPeriodeTest {
 
     @Test
     internal fun `Should choose the correct fom and tom with one Periode`() {
-        val periode = generatePeriode(
-            fom = LocalDate.of(2019, 1, 1),
-            tom = LocalDate.of(2019, 1, 2),
-        )
+        val periode =
+            generatePeriode(
+                fom = LocalDate.of(2019, 1, 1),
+                tom = LocalDate.of(2019, 1, 2),
+            )
         val receivedSykmelding = getReceivedSykemelding(listOf(periode))
 
         Assertions.assertEquals(
@@ -54,28 +57,28 @@ class SortedPeriodeTest {
 
         Assertions.assertEquals(
             LocalDate.of(2019, 1, 2),
-            receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeTOMDate()
-                .last().tom,
+            receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeTOMDate().last().tom,
         )
     }
 
     @Test
     internal fun `Should choose the correct fom and tom with one Periode with 2 periods`() {
-        val periode = generatePeriode(
-            fom = LocalDate.of(2019, 1, 1),
-            tom = LocalDate.of(2019, 1, 2),
-        )
-        val periode2 = generatePeriode(
-            fom = LocalDate.of(2019, 1, 3),
-            tom = LocalDate.of(2019, 1, 9),
-        )
+        val periode =
+            generatePeriode(
+                fom = LocalDate.of(2019, 1, 1),
+                tom = LocalDate.of(2019, 1, 2),
+            )
+        val periode2 =
+            generatePeriode(
+                fom = LocalDate.of(2019, 1, 3),
+                tom = LocalDate.of(2019, 1, 9),
+            )
 
         val receivedSykmelding = getReceivedSykemelding(listOf(periode2, periode))
 
         Assertions.assertEquals(
             LocalDate.of(2019, 1, 1),
-            receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeFOMDate()
-                .first().fom,
+            receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeFOMDate().first().fom,
         )
         Assertions.assertEquals(
             LocalDate.of(2019, 1, 9),
@@ -85,68 +88,87 @@ class SortedPeriodeTest {
 
     @Test
     internal fun `Should get correct title for sykemelding with one Periode`() {
-        val periode = generatePeriode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.of(2019, 1, 2))
+        val periode =
+            generatePeriode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.of(2019, 1, 2))
         val receivedSykmelding = getReceivedSykemelding(listOf(periode))
 
-        val title = createTittleJournalpost(ValidationResult(Status.OK, emptyList()), receivedSykmelding)
+        val title =
+            createTittleJournalpost(ValidationResult(Status.OK, emptyList()), receivedSykmelding)
 
         Assertions.assertEquals("Sykmelding 01.01.2019 - 02.01.2019", title)
     }
 
     @Test
     internal fun `Should get correct title for sykemelding with two Periode`() {
-        val periode = generatePeriode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.of(2019, 1, 2))
-        val periode2 = generatePeriode(fom = LocalDate.of(2019, 1, 3), tom = LocalDate.of(2019, 1, 4))
+        val periode =
+            generatePeriode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.of(2019, 1, 2))
+        val periode2 =
+            generatePeriode(fom = LocalDate.of(2019, 1, 3), tom = LocalDate.of(2019, 1, 4))
         val receivedSykmelding = getReceivedSykemelding(listOf(periode2, periode))
 
-        val title = createTittleJournalpost(ValidationResult(Status.OK, emptyList()), receivedSykmelding)
+        val title =
+            createTittleJournalpost(ValidationResult(Status.OK, emptyList()), receivedSykmelding)
 
         Assertions.assertEquals("Sykmelding 01.01.2019 - 04.01.2019", title)
     }
 
     @Test
     internal fun `Should get correct title for sykemelding with one gradert`() {
-        val periode = generatePeriode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.of(2019, 1, 2))
-        val periode2 = generatePeriode(
-            fom = LocalDate.of(2019, 1, 3),
-            tom = LocalDate.of(2019, 1, 4),
-            gradert = generateGradert(reisetilskudd = true, grad = 50),
-        )
+        val periode =
+            generatePeriode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.of(2019, 1, 2))
+        val periode2 =
+            generatePeriode(
+                fom = LocalDate.of(2019, 1, 3),
+                tom = LocalDate.of(2019, 1, 4),
+                gradert = generateGradert(reisetilskudd = true, grad = 50),
+            )
 
         val receivedSykmelding = getReceivedSykemelding(listOf(periode2, periode))
-        val title = createTittleJournalpost(ValidationResult(Status.OK, emptyList()), receivedSykmelding)
+        val title =
+            createTittleJournalpost(ValidationResult(Status.OK, emptyList()), receivedSykmelding)
 
         Assertions.assertEquals("Sykmelding 01.01.2019 - 04.01.2019", title)
     }
 
     @Test
     internal fun `Should get correct title for Sykemelding with several Perioder`() {
-        val periode = generatePeriode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.of(2019, 1, 2))
-        val periode2 = generatePeriode(
-            fom = LocalDate.of(2019, 1, 3),
-            tom = LocalDate.of(2019, 1, 4),
-            gradert = generateGradert(reisetilskudd = true, grad = 50),
-        )
-        val periode3 = generatePeriode(fom = LocalDate.of(2019, 1, 5), tom = LocalDate.of(2019, 2, 1))
+        val periode =
+            generatePeriode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.of(2019, 1, 2))
+        val periode2 =
+            generatePeriode(
+                fom = LocalDate.of(2019, 1, 3),
+                tom = LocalDate.of(2019, 1, 4),
+                gradert = generateGradert(reisetilskudd = true, grad = 50),
+            )
+        val periode3 =
+            generatePeriode(fom = LocalDate.of(2019, 1, 5), tom = LocalDate.of(2019, 2, 1))
 
         val receivedSykmelding = getReceivedSykemelding(listOf(periode2, periode3, periode))
-        val title = createTittleJournalpost(ValidationResult(Status.OK, emptyList()), receivedSykmelding)
+        val title =
+            createTittleJournalpost(ValidationResult(Status.OK, emptyList()), receivedSykmelding)
 
         Assertions.assertEquals("Sykmelding 01.01.2019 - 01.02.2019", title)
     }
 
     @Test
     internal fun `Should get Avvist Sykemelding with correct fom and tom`() {
-        val periode = generatePeriode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.of(2019, 1, 2))
-        val periode2 = generatePeriode(
-            fom = LocalDate.of(2019, 1, 3),
-            tom = LocalDate.of(2019, 1, 4),
-            gradert = generateGradert(reisetilskudd = true, grad = 50),
-        )
-        val periode3 = generatePeriode(fom = LocalDate.of(2019, 1, 5), tom = LocalDate.of(2019, 2, 1))
+        val periode =
+            generatePeriode(fom = LocalDate.of(2019, 1, 1), tom = LocalDate.of(2019, 1, 2))
+        val periode2 =
+            generatePeriode(
+                fom = LocalDate.of(2019, 1, 3),
+                tom = LocalDate.of(2019, 1, 4),
+                gradert = generateGradert(reisetilskudd = true, grad = 50),
+            )
+        val periode3 =
+            generatePeriode(fom = LocalDate.of(2019, 1, 5), tom = LocalDate.of(2019, 2, 1))
 
         val receivedSykmelding = getReceivedSykemelding(listOf(periode2, periode3, periode))
-        val title = createTittleJournalpost(ValidationResult(Status.INVALID, emptyList()), receivedSykmelding)
+        val title =
+            createTittleJournalpost(
+                ValidationResult(Status.INVALID, emptyList()),
+                receivedSykmelding
+            )
         Assertions.assertEquals("Avvist Sykmelding 01.01.2019 - 01.02.2019", title)
     }
 }

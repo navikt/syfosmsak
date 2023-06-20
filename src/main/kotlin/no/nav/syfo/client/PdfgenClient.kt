@@ -16,15 +16,17 @@ import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.objectMapper
 import no.nav.syfo.pdl.model.PdlPerson
 
-class PdfgenClient constructor(
+class PdfgenClient
+constructor(
     private val url: String,
     private val httpClient: HttpClient,
 ) {
     suspend fun createPdf(payload: PdfPayload): ByteArray {
-        val httpResponse = httpClient.post(url) {
-            contentType(ContentType.Application.Json)
-            setBody(payload)
-        }
+        val httpResponse =
+            httpClient.post(url) {
+                contentType(ContentType.Application.Json)
+                setBody(payload)
+            }
         if (httpResponse.status == HttpStatusCode.OK) {
             return httpResponse.call.response.body()
         } else {
@@ -38,25 +40,28 @@ fun createPdfPayload(
     receivedSykmelding: ReceivedSykmelding,
     validationResult: ValidationResult,
     person: PdlPerson,
-): PdfPayload = PdfPayload(
-    pasient = Pasient(
-        fornavn = person.navn.fornavn,
-        mellomnavn = person.navn.mellomnavn,
-        etternavn = person.navn.etternavn,
-        personnummer = receivedSykmelding.personNrPasient,
-        tlfNummer = receivedSykmelding.tlfPasient,
-    ),
-    sykmelding = mapToSykmeldingUtenUlovligeTegn(receivedSykmelding.sykmelding),
-    validationResult = validationResult,
-    mottattDato = receivedSykmelding.mottattDato,
-    behandlerKontorOrgName = receivedSykmelding.legekontorOrgName,
-    merknader = receivedSykmelding.merknader,
-    rulesetVersion = receivedSykmelding.rulesetVersion,
-    signerendBehandlerHprNr = receivedSykmelding.legeHprNr,
-)
+): PdfPayload =
+    PdfPayload(
+        pasient =
+            Pasient(
+                fornavn = person.navn.fornavn,
+                mellomnavn = person.navn.mellomnavn,
+                etternavn = person.navn.etternavn,
+                personnummer = receivedSykmelding.personNrPasient,
+                tlfNummer = receivedSykmelding.tlfPasient,
+            ),
+        sykmelding = mapToSykmeldingUtenUlovligeTegn(receivedSykmelding.sykmelding),
+        validationResult = validationResult,
+        mottattDato = receivedSykmelding.mottattDato,
+        behandlerKontorOrgName = receivedSykmelding.legekontorOrgName,
+        merknader = receivedSykmelding.merknader,
+        rulesetVersion = receivedSykmelding.rulesetVersion,
+        signerendBehandlerHprNr = receivedSykmelding.legeHprNr,
+    )
 
 fun mapToSykmeldingUtenUlovligeTegn(sykmelding: Sykmelding): Sykmelding {
     val sykmeldingSomString = objectMapper.writeValueAsString(sykmelding)
-    val sykmeldingSomStringUtenUlovligeTegn = sykmeldingSomString.replace(regex = Regex("\\p{C}"), "")
+    val sykmeldingSomStringUtenUlovligeTegn =
+        sykmeldingSomString.replace(regex = Regex("\\p{C}"), "")
     return objectMapper.readValue(sykmeldingSomStringUtenUlovligeTegn, Sykmelding::class.java)
 }

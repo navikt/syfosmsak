@@ -18,6 +18,8 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import io.mockk.coEvery
 import io.mockk.mockk
+import java.net.ServerSocket
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.model.JournalpostRequest
 import no.nav.syfo.model.JournalpostResponse
@@ -26,62 +28,62 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.net.ServerSocket
-import java.util.concurrent.TimeUnit
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class DokArkivClientTest {
     val accessTokenClientV2 = mockk<AccessTokenClientV2>()
-    val httpClient = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            jackson {
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    val httpClient =
+        HttpClient(CIO) {
+            install(ContentNegotiation) {
+                jackson {
+                    registerModule(JavaTimeModule())
+                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                }
             }
+            expectSuccess = false
         }
-        expectSuccess = false
-    }
     val loggingMetadata = LoggingMeta("mottakId", "orgnur", "msgId", "legeerklæringId")
 
     val mockHttpServerPort = ServerSocket(0).use { it.localPort }
     val mockHttpServerUrl = "http://localhost:$mockHttpServerPort"
-    val mockServer = embeddedServer(Netty, mockHttpServerPort) {
-        install(io.ktor.server.plugins.contentnegotiation.ContentNegotiation) {
-            jackson {}
-        }
-        routing {
-            post("/dokarkiv") {
-                when {
-                    call.request.header("Nav-Callid") == "NY" -> call.respond(
-                        HttpStatusCode.Created,
-                        JournalpostResponse(
-                            emptyList(),
-                            "nyJpId",
-                            true,
-                            null,
-                            null,
-                        ),
-                    )
-
-                    call.request.header("Nav-Callid") == "DUPLIKAT" -> call.respond(
-                        HttpStatusCode.Conflict,
-                        JournalpostResponse(
-                            emptyList(),
-                            "eksisterendeJpId",
-                            true,
-                            null,
-                            null,
-                        ),
-                    )
-
-                    else -> call.respond(HttpStatusCode.InternalServerError)
+    val mockServer =
+        embeddedServer(Netty, mockHttpServerPort) {
+                install(io.ktor.server.plugins.contentnegotiation.ContentNegotiation) { jackson {} }
+                routing {
+                    post("/dokarkiv") {
+                        when {
+                            call.request.header("Nav-Callid") == "NY" ->
+                                call.respond(
+                                    HttpStatusCode.Created,
+                                    JournalpostResponse(
+                                        emptyList(),
+                                        "nyJpId",
+                                        true,
+                                        null,
+                                        null,
+                                    ),
+                                )
+                            call.request.header("Nav-Callid") == "DUPLIKAT" ->
+                                call.respond(
+                                    HttpStatusCode.Conflict,
+                                    JournalpostResponse(
+                                        emptyList(),
+                                        "eksisterendeJpId",
+                                        true,
+                                        null,
+                                        null,
+                                    ),
+                                )
+                            else -> call.respond(HttpStatusCode.InternalServerError)
+                        }
+                    }
                 }
             }
-        }
-    }.start()
+            .start()
 
-    val dokArkivClient = DokArkivClient("$mockHttpServerUrl/dokarkiv", accessTokenClientV2, "scope", httpClient)
+    val dokArkivClient =
+        DokArkivClient("$mockHttpServerUrl/dokarkiv", accessTokenClientV2, "scope", httpClient)
 
     @AfterAll
     internal fun teardown() {
@@ -93,13 +95,14 @@ internal class DokArkivClientTest {
         coEvery { accessTokenClientV2.getAccessTokenV2(any(), any()) } returns "Token"
 
         runBlocking {
-            val jpResponse = dokArkivClient.createJournalpost(
-                JournalpostRequest(
-                    dokumenter = emptyList(),
-                    eksternReferanseId = "NY",
-                ),
-                loggingMetadata,
-            )
+            val jpResponse =
+                dokArkivClient.createJournalpost(
+                    JournalpostRequest(
+                        dokumenter = emptyList(),
+                        eksternReferanseId = "NY",
+                    ),
+                    loggingMetadata,
+                )
 
             Assertions.assertEquals("nyJpId", jpResponse.journalpostId)
         }
@@ -110,13 +113,14 @@ internal class DokArkivClientTest {
         coEvery { accessTokenClientV2.getAccessTokenV2(any(), any()) } returns "Token"
 
         runBlocking {
-            val jpResponse = dokArkivClient.createJournalpost(
-                JournalpostRequest(
-                    dokumenter = emptyList(),
-                    eksternReferanseId = "DUPLIKAT",
-                ),
-                loggingMetadata,
-            )
+            val jpResponse =
+                dokArkivClient.createJournalpost(
+                    JournalpostRequest(
+                        dokumenter = emptyList(),
+                        eksternReferanseId = "DUPLIKAT",
+                    ),
+                    loggingMetadata,
+                )
 
             Assertions.assertEquals("eksisterendeJpId", jpResponse.journalpostId)
         }

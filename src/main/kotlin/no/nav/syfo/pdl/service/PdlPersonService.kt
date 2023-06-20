@@ -19,7 +19,11 @@ class PdlPersonService(
 
         if (pdlResponse.errors != null) {
             pdlResponse.errors.forEach {
-                log.error("PDL returnerte error {}, {}", it, StructuredArguments.fields(loggingMeta))
+                log.error(
+                    "PDL returnerte error {}, {}",
+                    it,
+                    StructuredArguments.fields(loggingMeta)
+                )
             }
         }
 
@@ -32,21 +36,33 @@ class PdlPersonService(
             throw RuntimeException("Fant ikke navn på person i PDL")
         }
 
-        if (pdlResponse.data.hentIdenter == null || pdlResponse.data.hentIdenter.identer.isNullOrEmpty()) {
+        if (
+            pdlResponse.data.hentIdenter == null ||
+                pdlResponse.data.hentIdenter.identer.isNullOrEmpty()
+        ) {
             log.error("Fant ikke identer i PDL {}", StructuredArguments.fields(loggingMeta))
             throw RuntimeException("Fant ikke identer i PDL")
         }
 
         return PdlPerson(
             navn = getNavn(pdlResponse.data.hentPerson.navn[0]),
-            aktorId = pdlResponse.data.hentIdenter.identer.firstOrNull { it.gruppe == AKTORID }?.ident,
-            fnr = pdlResponse.data.hentIdenter.identer.firstOrNull { it.gruppe == FOLKEREGISTERIDENT }?.ident,
-            adressebeskyttelse = pdlResponse.data.hentPerson.adressebeskyttelse?.firstOrNull()?.gradering,
+            aktorId =
+                pdlResponse.data.hentIdenter.identer.firstOrNull { it.gruppe == AKTORID }?.ident,
+            fnr =
+                pdlResponse.data.hentIdenter.identer
+                    .firstOrNull { it.gruppe == FOLKEREGISTERIDENT }
+                    ?.ident,
+            adressebeskyttelse =
+                pdlResponse.data.hentPerson.adressebeskyttelse?.firstOrNull()?.gradering,
         )
     }
 
     private fun getNavn(navn: no.nav.syfo.pdl.client.model.Navn): Navn {
-        return Navn(fornavn = navn.fornavn, mellomnavn = navn.mellomnavn, etternavn = navn.etternavn)
+        return Navn(
+            fornavn = navn.fornavn,
+            mellomnavn = navn.mellomnavn,
+            etternavn = navn.etternavn
+        )
     }
 
     companion object {

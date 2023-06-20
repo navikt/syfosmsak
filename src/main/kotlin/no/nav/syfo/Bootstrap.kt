@@ -21,6 +21,8 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
 import io.prometheus.client.hotspot.DefaultExports
+import java.io.FileInputStream
+import java.time.Duration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -55,17 +57,19 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.FileInputStream
-import java.time.Duration
 
-data class BehandlingsUtfallReceivedSykmelding(val receivedSykmelding: ByteArray, val behandlingsUtfall: ByteArray)
+data class BehandlingsUtfallReceivedSykmelding(
+    val receivedSykmelding: ByteArray,
+    val behandlingsUtfall: ByteArray
+)
 
-val objectMapper: ObjectMapper = ObjectMapper().apply {
-    registerKotlinModule()
-    registerModule(JavaTimeModule())
-    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-}
+val objectMapper: ObjectMapper =
+    ObjectMapper().apply {
+        registerKotlinModule()
+        registerModule(JavaTimeModule())
+        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+    }
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmsak")
 
@@ -73,10 +77,11 @@ val log: Logger = LoggerFactory.getLogger("no.nav.syfo.syfosmsak")
 fun main() {
     val env = Environment()
     val applicationState = ApplicationState()
-    val applicationEngine = createApplicationEngine(
-        env,
-        applicationState,
-    )
+    val applicationEngine =
+        createApplicationEngine(
+            env,
+            applicationState,
+        )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
 
@@ -94,7 +99,8 @@ fun main() {
         HttpResponseValidator {
             handleResponseExceptionWithRequest { exception, _ ->
                 when (exception) {
-                    is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
+                    is SocketTimeoutException ->
+                        throw ServiceUnavailableException(exception.message)
                 }
             }
         }
@@ -106,7 +112,9 @@ fun main() {
             }
             retryIf(maxRetries) { request, response ->
                 if (response.status.value.let { it in 500..599 }) {
-                    log.warn("Retrying for statuscode ${response.status.value}, for url ${request.url}")
+                    log.warn(
+                        "Retrying for statuscode ${response.status.value}, for url ${request.url}"
+                    )
                     true
                 } else {
                     false
@@ -122,18 +130,40 @@ fun main() {
 
     val httpClient = HttpClient(Apache, config)
 
-    val accessTokenClientV2 = AccessTokenClientV2(env.aadAccessTokenV2Url, env.clientIdV2, env.clientSecretV2, httpClient)
-    val dokArkivClient = DokArkivClient(env.dokArkivUrl, accessTokenClientV2, env.dokArkivScope, httpClient)
+    val accessTokenClientV2 =
+        AccessTokenClientV2(env.aadAccessTokenV2Url, env.clientIdV2, env.clientSecretV2, httpClient)
+    val dokArkivClient =
+        DokArkivClient(env.dokArkivUrl, accessTokenClientV2, env.dokArkivScope, httpClient)
     val pdfgenClient = PdfgenClient(env.pdfgen, httpClient)
 
-    val pdlPersonService = PdlFactory.getPdlService(env, httpClient, accessTokenClientV2, env.pdlScope)
+    val pdlPersonService =
+        PdlFactory.getPdlService(env, httpClient, accessTokenClientV2, env.pdlScope)
 
-    val sykmeldingVedleggStorageCredentials: Credentials = GoogleCredentials.fromStream(FileInputStream("/var/run/secrets/sykmeldingvedlegg-google-creds.json"))
-    val sykmeldingVedleggStorage: Storage = StorageOptions.newBuilder().setCredentials(sykmeldingVedleggStorageCredentials).build().service
+    val sykmeldingVedleggStorageCredentials: Credentials =
+        GoogleCredentials.fromStream(
+            FileInputStream("/var/run/secrets/sykmeldingvedlegg-google-creds.json")
+        )
+    val sykmeldingVedleggStorage: Storage =
+        StorageOptions.newBuilder()
+            .setCredentials(sykmeldingVedleggStorageCredentials)
+            .build()
+            .service
     val bucketService = BucketService(env.sykmeldingVedleggBucketName, sykmeldingVedleggStorage)
 
-    val aivenProducer = KafkaProducer<String, JournalKafkaMessage>(KafkaUtils.getAivenKafkaConfig().toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class))
-    val journalAivenService = JournalService(env.oppgaveJournalOpprettet, aivenProducer, dokArkivClient, pdfgenClient, pdlPersonService, bucketService)
+    val aivenProducer =
+        KafkaProducer<String, JournalKafkaMessage>(
+            KafkaUtils.getAivenKafkaConfig()
+                .toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class)
+        )
+    val journalAivenService =
+        JournalService(
+            env.oppgaveJournalOpprettet,
+            aivenProducer,
+            dokArkivClient,
+            pdfgenClient,
+            pdlPersonService,
+            bucketService
+        )
 
     launchListeners(env, applicationState, journalAivenService)
 
@@ -141,12 +171,19 @@ fun main() {
 }
 
 @DelicateCoroutinesApi
-fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
+fun createListener(
+    applicationState: ApplicationState,
+    action: suspend CoroutineScope.() -> Unit
+): Job =
     GlobalScope.launch(Dispatchers.Unbounded) {
         try {
             action()
         } catch (e: TrackableException) {
-            log.error("En uhåndtert feil oppstod, applikasjonen restarter {}", fields(e.loggingMeta), e.cause)
+            log.error(
+                "En uhåndtert feil oppstod, applikasjonen restarter {}",
+                fields(e.loggingMeta),
+                e.cause
+            )
         } catch (ex: Exception) {
             log.error("En uhåndtert feil oppstod, applikasjonen restarter", ex)
         } finally {
@@ -162,11 +199,15 @@ fun launchListeners(
     applicationState: ApplicationState,
     journalServiceAiven: JournalService,
 ) {
-    val kafkaAivenConsumer = KafkaConsumer<String, String>(
-        KafkaUtils.getAivenKafkaConfig()
-            .toConsumerConfig("${env.applicationName}-consumer", valueDeserializer = StringDeserializer::class)
-            .also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none" },
-    )
+    val kafkaAivenConsumer =
+        KafkaConsumer<String, String>(
+            KafkaUtils.getAivenKafkaConfig()
+                .toConsumerConfig(
+                    "${env.applicationName}-consumer",
+                    valueDeserializer = StringDeserializer::class
+                )
+                .also { it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none" },
+        )
 
     createListener(applicationState) {
         kafkaAivenConsumer.subscribe(listOf(env.privatSykmeldingSak))
@@ -185,7 +226,9 @@ suspend fun blockingApplicationLogic(
 ) {
     while (applicationState.ready) {
         consumer.poll(Duration.ofSeconds(1)).forEach {
-            log.info("Offset for topic: privat-sykmelding-sak, offset: ${it.offset()}, partisjon: ${it.partition()}")
+            log.info(
+                "Offset for topic: privat-sykmelding-sak, offset: ${it.offset()}, partisjon: ${it.partition()}"
+            )
             val behandlingsUtfallReceivedSykmelding: BehandlingsUtfallReceivedSykmelding =
                 objectMapper.readValue(it.value())
             val receivedSykmelding: ReceivedSykmelding =
@@ -193,12 +236,13 @@ suspend fun blockingApplicationLogic(
             val validationResult: ValidationResult =
                 objectMapper.readValue(behandlingsUtfallReceivedSykmelding.behandlingsUtfall)
 
-            val loggingMeta = LoggingMeta(
-                mottakId = receivedSykmelding.navLogId,
-                orgNr = receivedSykmelding.legekontorOrgNr,
-                msgId = receivedSykmelding.msgId,
-                sykmeldingId = receivedSykmelding.sykmelding.id,
-            )
+            val loggingMeta =
+                LoggingMeta(
+                    mottakId = receivedSykmelding.navLogId,
+                    orgNr = receivedSykmelding.legekontorOrgNr,
+                    msgId = receivedSykmelding.msgId,
+                    sykmeldingId = receivedSykmelding.sykmelding.id,
+                )
             withTimeout(Duration.ofSeconds(30)) {
                 journalService.onJournalRequest(receivedSykmelding, validationResult, loggingMeta)
             }

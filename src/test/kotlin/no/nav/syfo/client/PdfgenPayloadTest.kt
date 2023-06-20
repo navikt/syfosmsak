@@ -9,15 +9,19 @@ internal class PdfgenPayloadTest {
 
     @Test
     internal fun `mapToSykmeldingUtenUlovligeTegn fjerner zwnbsp`() {
-        val utdypendeOpplysninger = mapOf(
-            "6.2" to mapOf(
-                "6.2.1" to SporsmalSvar(
-                    sporsmal = "Beskriv kort sykehistorie, symptomer og funn i dagens situasjon.",
-                    svar = "\uFEFF_ •• l\\iiJr~Svar med skumle tegn",
-                    restriksjoner = emptyList(),
-                ),
-            ),
-        )
+        val utdypendeOpplysninger =
+            mapOf(
+                "6.2" to
+                    mapOf(
+                        "6.2.1" to
+                            SporsmalSvar(
+                                sporsmal =
+                                    "Beskriv kort sykehistorie, symptomer og funn i dagens situasjon.",
+                                svar = "\uFEFF_ •• l\\iiJr~Svar med skumle tegn",
+                                restriksjoner = emptyList(),
+                            ),
+                    ),
+            )
         val sykmelding = generateSykmelding().copy(utdypendeOpplysninger = utdypendeOpplysninger)
 
         val oppdatertSykmelding = mapToSykmeldingUtenUlovligeTegn(sykmelding)
@@ -30,15 +34,19 @@ internal class PdfgenPayloadTest {
 
     @Test
     internal fun `mapToSykmeldingUtenUlovligeTegn endrer ikke sykmelding uten ulovlige tegn`() {
-        val utdypendeOpplysninger = mapOf(
-            "6.2" to mapOf(
-                "6.2.1" to SporsmalSvar(
-                    sporsmal = "Beskriv kort sykehistorie, symptomer og funn i dagens situasjon.",
-                    svar = "Svar uten skumle tegn",
-                    restriksjoner = emptyList(),
-                ),
-            ),
-        )
+        val utdypendeOpplysninger =
+            mapOf(
+                "6.2" to
+                    mapOf(
+                        "6.2.1" to
+                            SporsmalSvar(
+                                sporsmal =
+                                    "Beskriv kort sykehistorie, symptomer og funn i dagens situasjon.",
+                                svar = "Svar uten skumle tegn",
+                                restriksjoner = emptyList(),
+                            ),
+                    ),
+            )
         val sykmelding = generateSykmelding().copy(utdypendeOpplysninger = utdypendeOpplysninger)
 
         val oppdatertSykmelding = mapToSykmeldingUtenUlovligeTegn(sykmelding)
