@@ -14,6 +14,7 @@ data class Environment(
     val privatSykmeldingSak: String = "teamsykmelding.privat-sykmelding-sak",
     val oppgaveJournalOpprettet: String = "teamsykmelding.oppgave-journal-opprettet",
     val sykmeldingVedleggBucketName: String = getEnvVar("SYKMELDING_VEDLEGG_BUCKET_NAME"),
+    val cluster: String = getEnvVar("NAIS_CLUSTER_NAME")
 )
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =

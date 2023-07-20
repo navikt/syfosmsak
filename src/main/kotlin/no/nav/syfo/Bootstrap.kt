@@ -215,6 +215,7 @@ fun launchListeners(
             kafkaAivenConsumer,
             applicationState,
             journalServiceAiven,
+            env,
         )
     }
 }
@@ -223,6 +224,7 @@ suspend fun blockingApplicationLogic(
     consumer: KafkaConsumer<String, String>,
     applicationState: ApplicationState,
     journalService: JournalService,
+    env: Environment,
 ) {
     while (applicationState.ready) {
         consumer.poll(Duration.ofSeconds(1)).forEach {
@@ -244,7 +246,22 @@ suspend fun blockingApplicationLogic(
                     sykmeldingId = receivedSykmelding.sykmelding.id,
                 )
             withTimeout(Duration.ofSeconds(30)) {
-                journalService.onJournalRequest(receivedSykmelding, validationResult, loggingMeta)
+                try {
+                    journalService.onJournalRequest(
+                        receivedSykmelding,
+                        validationResult,
+                        loggingMeta
+                    )
+                } catch (ex: Exception) {
+                    if (env.cluster == "dev-gcp") {
+                        log.error(
+                            "Could not process record {} skipping in dev",
+                            fields(loggingMeta)
+                        )
+                    } else {
+                        throw ex
+                    }
+                }
             }
         }
     }
