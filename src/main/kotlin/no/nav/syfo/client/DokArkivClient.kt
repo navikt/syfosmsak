@@ -111,6 +111,8 @@ fun createJournalpostPayload(
                             fields(loggingMeta),
                         )
                     }
+            } else if (receivedSykmelding.sykmelding.id == "24e7b1d7-7ec9-41d4-b3f7-279a943958f0") {
+                createAvsenderMottakerValidFnr(receivedSykmelding)
             } else {
                 when (validatePersonAndDNumber(receivedSykmelding.sykmelding.behandler.fnr)) {
                     true ->
