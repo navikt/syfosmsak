@@ -76,8 +76,8 @@ class DokArkivClient(
             } else {
                 log.error(
                     "Mottok uventet statuskode fra dokarkiv: {}, Nav-Callid {}, {}, ",
-                    journalpostRequest.eksternReferanseId,
                     httpResponse.status,
+                    journalpostRequest.eksternReferanseId,
                     fields(loggingMeta)
                 )
                 throw RuntimeException(
