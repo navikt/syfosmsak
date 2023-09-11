@@ -188,7 +188,7 @@ fun createListener(
         } catch (ex: Exception) {
             log.error("En uhåndtert feil oppstod, applikasjonen restarter", ex)
         } finally {
-            log.error("Setting ready and alive to false")
+            log.info("Setting ready and alive to false")
             applicationState.ready = false
             applicationState.alive = false
         }
