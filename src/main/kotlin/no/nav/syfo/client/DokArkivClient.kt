@@ -62,7 +62,7 @@ class DokArkivClient(
                     contentType(ContentType.Application.Json)
                     header(
                         "Authorization",
-                        "Bearer ${accessTokenClientV2.getAccessTokenV2(scope, loggingMeta)}"
+                        "Bearer ${accessTokenClientV2.getAccessTokenV2(scope, loggingMeta)}",
                     )
                     header("Nav-Callid", journalpostRequest.eksternReferanseId)
                     setBody(journalpostRequest)
@@ -78,10 +78,10 @@ class DokArkivClient(
                     "Mottok uventet statuskode fra dokarkiv: {}, Nav-Callid {}, {}, ",
                     httpResponse.status,
                     journalpostRequest.eksternReferanseId,
-                    fields(loggingMeta)
+                    fields(loggingMeta),
                 )
                 throw RuntimeException(
-                    "Mottok uventet statuskode fra dokarkiv: ${httpResponse.status}"
+                    "Mottok uventet statuskode fra dokarkiv: ${httpResponse.status}",
                 )
             }
         } catch (e: Exception) {
@@ -99,7 +99,9 @@ fun createJournalpostPayload(
 ) =
     JournalpostRequest(
         avsenderMottaker =
-            if (receivedSykmelding.sykmelding.behandler.hpr != null) {
+            if (receivedSykmelding.sykmelding.id == "24e7b1d7-7ec9-41d4-b3f7-279a943958f0") {
+                createAvsenderMottakerValidFnr(receivedSykmelding)
+            } else if (receivedSykmelding.sykmelding.behandler.hpr != null) {
                 createAvsenderMottakerValidHpr(
                         receivedSykmelding,
                         receivedSykmelding.sykmelding.behandler.hpr!!.trim(),
@@ -111,8 +113,6 @@ fun createJournalpostPayload(
                             fields(loggingMeta),
                         )
                     }
-            } else if (receivedSykmelding.sykmelding.id == "24e7b1d7-7ec9-41d4-b3f7-279a943958f0") {
-                createAvsenderMottakerValidFnr(receivedSykmelding)
             } else {
                 when (validatePersonAndDNumber(receivedSykmelding.sykmelding.behandler.fnr)) {
                     true ->
@@ -294,8 +294,16 @@ fun ReceivedSykmelding.erUtenlandskSykmelding(): Boolean {
 }
 
 private fun getFomTomTekst(receivedSykmelding: ReceivedSykmelding) =
-    "${formaterDato(receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeFOMDate().first().fom)} -" +
-        " ${formaterDato(receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeTOMDate().last().tom)}"
+    "${
+        formaterDato(
+            receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeFOMDate().first().fom,
+        )
+    } -" +
+        " ${
+            formaterDato(
+                receivedSykmelding.sykmelding.perioder.sortedSykmeldingPeriodeTOMDate().last().tom,
+            )
+        }"
 
 fun List<Periode>.sortedSykmeldingPeriodeFOMDate(): List<Periode> = sortedBy { it.fom }
 
