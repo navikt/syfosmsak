@@ -13,13 +13,11 @@ import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.Vedlegg
 import no.nav.syfo.pdl.service.PdlPersonService
+import no.nav.syfo.sikkerlogg
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.wrapExceptions
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.slf4j.LoggerFactory
-
-private val sikkerlogg = LoggerFactory.getLogger("securelog")
 
 class JournalService(
     private val journalCreatedTopic: String,
