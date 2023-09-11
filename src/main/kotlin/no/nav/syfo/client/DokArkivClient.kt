@@ -99,9 +99,7 @@ fun createJournalpostPayload(
 ) =
     JournalpostRequest(
         avsenderMottaker =
-            if (receivedSykmelding.sykmelding.id == "24e7b1d7-7ec9-41d4-b3f7-279a943958f0") {
-                createAvsenderMottakerValidFnr(receivedSykmelding)
-            } else if (receivedSykmelding.sykmelding.behandler.hpr != null) {
+            if (receivedSykmelding.sykmelding.behandler.hpr != null) {
                 createAvsenderMottakerValidHpr(
                         receivedSykmelding,
                         receivedSykmelding.sykmelding.behandler.hpr!!.trim(),
