@@ -75,7 +75,8 @@ class DokArkivClient(
                 httpResponse.call.response.body()
             } else {
                 log.error(
-                    "Mottok uventet statuskode fra dokarkiv: {}, {}",
+                    "Mottok uventet statuskode fra dokarkiv: {}, Nav-Callid {}, {}, ",
+                    journalpostRequest.eksternReferanseId,
                     httpResponse.status,
                     fields(loggingMeta)
                 )
