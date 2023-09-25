@@ -1,7 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 group = "no.nav.syfo"
 version = "1.0.0"
 
@@ -19,26 +15,25 @@ val kotlinVersion = "1.9.10"
 val pdfboxVersion = "2.0.29"
 val googleCloudStorageVersion = "2.27.0"
 val ktfmtVersion = "0.44"
+val commonsCodecVersion = "1.16.0"
 
 plugins {
+    id("application")
     kotlin("jvm") version "1.9.10"
     id("com.diffplug.spotless") version "6.21.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("org.cyclonedx.bom") version "1.7.4"
 }
 
-val githubUser: String by project
-val githubPassword: String by project
+application {
+    mainClass.set("no.nav.syfo.BootstrapKt")
+
+}
 
 
 repositories {
     mavenCentral()
     maven {
-        url = uri("https://maven.pkg.github.com/navikt/syfosm-common")
-        credentials {
-            username = githubUser
-            password = githubPassword
-        }
+        url = uri("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
     }
 }
 
@@ -57,6 +52,11 @@ dependencies {
     implementation("io.ktor:ktor-server-call-id:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
+    constraints {
+        implementation("commons-codec:commons-codec:$commonsCodecVersion") {
+            because("override transient from io.ktor:ktor-client-apache")
+        }
+    }
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 
@@ -76,28 +76,26 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("io.mockk:mockk:$ioMockVersion")
 }
 tasks {
-    withType<Jar> {
-        manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
-    }
 
-    create("printVersion") {
-        doLast {
-            println(project.version)
+    shadowJar {
+        archiveBaseName.set("app")
+        archiveClassifier.set("")
+        isZip64 = true
+        manifest {
+            attributes(
+                mapOf(
+                    "Main-Class" to "no.nav.syfo.BootstrapKt",
+                ),
+            )
         }
     }
 
-    withType<ShadowJar> {
-        transform(ServiceFileTransformer::class.java) {
-            setPath("META-INF/cxf")
-            include("bus-extensions.txt")
-        }
-    }
-
-    withType<Test> {
+    test {
         useJUnitPlatform {
         }
         testLogging {
