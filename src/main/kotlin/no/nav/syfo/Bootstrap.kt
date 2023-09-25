@@ -153,7 +153,7 @@ fun main() {
 
     val aivenProducer =
         KafkaProducer<String, JournalKafkaMessage>(
-            KafkaUtils.getAivenKafkaConfig()
+            KafkaUtils.getAivenKafkaConfig("oppgave-journal-opprettet-producer")
                 .toProducerConfig("${env.applicationName}-producer", JacksonKafkaSerializer::class)
         )
     val journalAivenService =
@@ -202,7 +202,7 @@ fun launchListeners(
 ) {
     val kafkaAivenConsumer =
         KafkaConsumer<String, String>(
-            KafkaUtils.getAivenKafkaConfig()
+            KafkaUtils.getAivenKafkaConfig("privat-sykmelding-sak-consumer")
                 .toConsumerConfig(
                     "${env.applicationName}-consumer",
                     valueDeserializer = StringDeserializer::class
