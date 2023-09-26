@@ -13,7 +13,7 @@ val junitJupiterVersion = "5.10.0"
 val ioMockVersion = "1.13.8"
 val kotlinVersion = "1.9.10"
 val pdfboxVersion = "2.0.29"
-val googleCloudStorageVersion = "2.27.0"
+val googleCloudStorageVersion = "2.27.1"
 val ktfmtVersion = "0.44"
 val commonsCodecVersion = "1.16.0"
 
