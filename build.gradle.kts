@@ -16,6 +16,7 @@ val pdfboxVersion = "2.0.29"
 val googleCloudStorageVersion = "2.27.1"
 val ktfmtVersion = "0.44"
 val commonsCodecVersion = "1.16.0"
+val snappyJavaVersion = "1.1.10.4"
 
 plugins {
     id("application")
@@ -66,6 +67,11 @@ dependencies {
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashLogbackEncoder")
 
     implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
+    constraints {
+        implementation("org.xerial.snappy:snappy-java:$snappyJavaVersion") {
+            because("override transient from org.apache.kafka:kafka_2.12")
+        }
+    }
     implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-diagnosis-codes:$smCommonVersion")
