@@ -30,8 +30,14 @@ constructor(
         if (httpResponse.status == HttpStatusCode.OK) {
             return httpResponse.call.response.body()
         } else {
-            log.error("Mottok feilkode fra syfopdfgen: {}", httpResponse.status)
-            throw RuntimeException("Mottok feilkode fra syfopdfgen: ${httpResponse.status}")
+            log.error(
+                "Mottok feilkode fra smpdfgen: {} for sykmeldingID {}",
+                httpResponse.status,
+                payload.sykmelding.id,
+            )
+            throw RuntimeException(
+                "Mottok feilkode fra smpdfgen: ${httpResponse.status} for sykmeldingID ${payload.sykmelding.id}"
+            )
         }
     }
 }
