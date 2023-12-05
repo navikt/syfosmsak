@@ -46,12 +46,6 @@ class DokArkivClient(
         loggingMeta: LoggingMeta,
     ): JournalpostResponse =
         try {
-            sikkerlogg.info(
-                "Kall til dokarkiv Nav-Callid {}, {}, request: {}",
-                journalpostRequest.eksternReferanseId,
-                fields(loggingMeta),
-                journalpostRequest,
-            )
             log.info(
                 "Kall til dokarkiv Nav-Callid {}, {}",
                 journalpostRequest.eksternReferanseId,
