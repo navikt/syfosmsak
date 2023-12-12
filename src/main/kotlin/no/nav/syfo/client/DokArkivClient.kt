@@ -30,7 +30,6 @@ import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.Vedlegg
 import no.nav.syfo.objectMapper
-import no.nav.syfo.sikkerlogg
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.imageToPDF
 import no.nav.syfo.validation.validatePersonAndDNumber
