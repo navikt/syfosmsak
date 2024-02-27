@@ -269,8 +269,10 @@ fun createTittleJournalpost(
     validationResult: ValidationResult,
     receivedSykmelding: ReceivedSykmelding
 ): String {
-    return if (validationResult.status == Status.INVALID) {
-        "Avvist Sykmelding ${getFomTomTekst(receivedSykmelding)}"
+    return if (validationResult.status == Status.INVALID || receivedSykmelding.ugyldigTilbakedatering()) {
+        "Avvist sykmelding ${getFomTomTekst(receivedSykmelding)}"
+    } else if (receivedSykmelding.delvisGodkjent()) {
+        "Delvis godkjent sykmelding ${getFomTomTekst(receivedSykmelding)}"
     } else if (receivedSykmelding.sykmelding.avsenderSystem.navn == "Papirsykmelding") {
         "Sykmelding mottatt på papir ${getFomTomTekst(receivedSykmelding)}"
     } else if (receivedSykmelding.erUtenlandskSykmelding()) {
@@ -278,6 +280,14 @@ fun createTittleJournalpost(
     } else {
         "Sykmelding ${getFomTomTekst(receivedSykmelding)}"
     }
+}
+
+fun ReceivedSykmelding.ugyldigTilbakedatering(): Boolean {
+    return merknader != null && merknader!!.any {it.type == "UGYLDIG_TILBAKEDATERING"}
+}
+
+fun ReceivedSykmelding.delvisGodkjent(): Boolean {
+    return merknader != null && merknader!!.any {it.type == "DELVIS_GODKJENT"}
 }
 
 fun ReceivedSykmelding.erUtenlandskSykmelding(): Boolean {
