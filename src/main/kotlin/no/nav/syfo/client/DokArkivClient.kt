@@ -269,8 +269,10 @@ fun createTittleJournalpost(
     validationResult: ValidationResult,
     receivedSykmelding: ReceivedSykmelding
 ): String {
-    return if (validationResult.status == Status.INVALID || receivedSykmelding.ugyldigTilbakedatering()) {
+    return if (validationResult.status == Status.INVALID) {
         "Avvist sykmelding ${getFomTomTekst(receivedSykmelding)}"
+    } else if  (receivedSykmelding.ugyldigTilbakedatering()) {
+        "Avslått sykmelding ${getFomTomTekst(receivedSykmelding)}"
     } else if (receivedSykmelding.delvisGodkjent()) {
         "Delvis godkjent sykmelding ${getFomTomTekst(receivedSykmelding)}"
     } else if (receivedSykmelding.sykmelding.avsenderSystem.navn == "Papirsykmelding") {

@@ -182,7 +182,7 @@ class SortedPeriodeTest {
 
         val title =
             createTittleJournalpost(ValidationResult(Status.OK, emptyList()), receivedSykmelding)
-        Assertions.assertEquals("Avvist sykmelding 01.01.2024 - 02.02.2024", title)
+        Assertions.assertEquals("Avslått sykmelding 01.01.2024 - 02.02.2024", title)
 
     }
 
