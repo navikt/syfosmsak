@@ -5,13 +5,13 @@ import java.time.LocalDateTime
 import no.nav.syfo.client.createTittleJournalpost
 import no.nav.syfo.client.sortedSykmeldingPeriodeFOMDate
 import no.nav.syfo.client.sortedSykmeldingPeriodeTOMDate
+import no.nav.syfo.model.Merknad
 import no.nav.syfo.model.Periode
 import no.nav.syfo.model.ReceivedSykmelding
 import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import no.nav.syfo.model.Merknad
 
 class SortedPeriodeTest {
 
@@ -175,26 +175,32 @@ class SortedPeriodeTest {
     }
 
     @Test
-    internal  fun `Should create title for UGYLDIG_TILBAKEDATERING sykmelding` () {
+    internal fun `Should create title for UGYLDIG_TILBAKEDATERING sykmelding`() {
         val periode =
             generatePeriode(fom = LocalDate.of(2024, 1, 1), tom = LocalDate.of(2024, 2, 2))
-        val receivedSykmelding = getReceivedSykemelding(listOf(periode), listOf(Merknad(beskrivelse = null, type = "UGYLDIG_TILBAKEDATERING")))
+        val receivedSykmelding =
+            getReceivedSykemelding(
+                listOf(periode),
+                listOf(Merknad(beskrivelse = null, type = "UGYLDIG_TILBAKEDATERING"))
+            )
 
         val title =
             createTittleJournalpost(ValidationResult(Status.OK, emptyList()), receivedSykmelding)
         Assertions.assertEquals("Avslått sykmelding 01.01.2024 - 02.02.2024", title)
-
     }
 
     @Test
-    internal  fun `Should create title for DELVIS_GODKJENT sykmelding` () {
+    internal fun `Should create title for DELVIS_GODKJENT sykmelding`() {
         val periode =
             generatePeriode(fom = LocalDate.of(2024, 2, 1), tom = LocalDate.of(2024, 2, 20))
-        val receivedSykmelding = getReceivedSykemelding(listOf(periode), listOf(Merknad(beskrivelse = null, type = "DELVIS_GODKJENT")))
+        val receivedSykmelding =
+            getReceivedSykemelding(
+                listOf(periode),
+                listOf(Merknad(beskrivelse = null, type = "DELVIS_GODKJENT"))
+            )
 
         val title =
             createTittleJournalpost(ValidationResult(Status.OK, emptyList()), receivedSykmelding)
         Assertions.assertEquals("Delvis godkjent sykmelding 01.02.2024 - 20.02.2024", title)
-
     }
 }
