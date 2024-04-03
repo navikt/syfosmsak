@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.syfo.model.VedleggMessage
 import no.nav.syfo.objectMapper
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class DokArkivClientKtTest {
@@ -18,7 +19,7 @@ internal class DokArkivClientKtTest {
 
         val oppdatertVedlegg = vedleggToPDF(gosysVedlegg)
 
-        Assertions.assertEquals(gosysVedlegg, oppdatertVedlegg)
+        assertEquals(gosysVedlegg, oppdatertVedlegg)
     }
 
     @Test
@@ -32,28 +33,37 @@ internal class DokArkivClientKtTest {
         val oppdatertVedlegg = vedleggToPDF(gosysVedlegg)
 
         Assertions.assertNotEquals(gosysVedlegg, oppdatertVedlegg)
-        Assertions.assertEquals("application/pdf", oppdatertVedlegg.contentType)
-        Assertions.assertEquals(vedleggMessage.vedlegg.description, oppdatertVedlegg.description)
+        assertEquals("application/pdf", oppdatertVedlegg.contentType)
+        assertEquals(vedleggMessage.vedlegg.description, oppdatertVedlegg.description)
     }
 
     @Test
     internal fun `Skal legge paa padding dersom hpr er under 9 siffer`() {
-        val hprnummmer = hprnummerMedRiktigLengdeOgFormat("02345678 ".trim())
-
-        Assertions.assertEquals("002345678", hprnummmer)
+        val hprnummmer = hprnummerMedRiktigLengdeOgFormat("02345678 ".trim(), "02345678")
+        assertEquals("002345678", hprnummmer)
     }
 
     @Test
     internal fun `Skal fjerne - fra hprnummer`() {
-        val hprnummmer = hprnummerMedRiktigLengdeOgFormat("-02345678".trim())
-
-        Assertions.assertEquals("002345678", hprnummmer)
+        val hprnummmer = hprnummerMedRiktigLengdeOgFormat("-02345678".trim(), "02345678")
+        assertEquals("002345678", hprnummmer)
     }
 
     @Test
     internal fun `Skal fjerne bokstaver fra hprnummer`() {
-        val hprnummmer = hprnummerMedRiktigLengdeOgFormat("0A234B5678".trim())
+        val hprnummmer = hprnummerMedRiktigLengdeOgFormat("0A234B5678".trim(), "02345678")
+        assertEquals("002345678", hprnummmer)
+    }
 
-        Assertions.assertEquals("002345678", hprnummmer)
+    @Test
+    internal fun `Skal bruke signatur hprnummer dersom hprBehandler er lengre enn 9 siffer`() {
+        val hprnummmer = hprnummerMedRiktigLengdeOgFormat("11111111111", "02345678")
+        assertEquals("02345678", hprnummmer)
+    }
+
+    @Test
+    internal fun `Skal bruke behandler hprnummer dersom hprBehandler er lik 9 siffer`() {
+        val hprnummmer = hprnummerMedRiktigLengdeOgFormat("111111111", "02345678")
+        assertEquals("111111111", hprnummmer)
     }
 }
