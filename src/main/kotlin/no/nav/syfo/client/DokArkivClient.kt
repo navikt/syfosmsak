@@ -31,6 +31,7 @@ import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.Vedlegg
 import no.nav.syfo.objectMapper
+import no.nav.syfo.sikkerlogg
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.imageToPDF
 import no.nav.syfo.validation.validatePersonAndDNumber
@@ -45,6 +46,7 @@ class DokArkivClient(
         journalpostRequest: JournalpostRequest,
         loggingMeta: LoggingMeta,
     ): JournalpostResponse {
+        val requestBodyJson = journalpostRequestToJson(journalpostRequest)
         return try {
             log.info(
                 "Kall til dokarkiv Nav-Callid {}, {}",
@@ -66,8 +68,13 @@ class DokArkivClient(
                 httpResponse.status == HttpStatusCode.Created ||
                     httpResponse.status == HttpStatusCode.Conflict
             ) {
+                sikkerlogg.info("Info om journalpostRequest som gitt bra {}", kv("journalpostType", requestBodyJson))
                 httpResponse.call.response.body()
             } else {
+                sikkerlogg.error(
+                    "Info om journalpostRequesten {}",
+                    kv("journalpostType", requestBodyJson)
+                )
                 log.error(
                     "Mottok uventet statuskode fra dokarkiv: {}, Nav-Callid {}, {}, ",
                     httpResponse.status,
@@ -85,6 +92,23 @@ class DokArkivClient(
     }
 }
 
+fun journalpostRequestToJson(request: JournalpostRequest): String {
+    return """{
+        "avsenderMottaker": "${request.avsenderMottaker?.id}",
+        "behandlingstema": "${request.behandlingstema}",
+        "bruker": "${request.bruker?.id}",
+        "dokumenter": "${request.dokumenter.firstOrNull()?.tittel}",
+        "eksternReferanseId": "${request.eksternReferanseId}",
+        "journalfoerendeEnhet": "${request.journalfoerendeEnhet}",
+        "journalpostType": "${request.journalpostType}"
+        "kanal": "${request.kanal}"
+        "sak": "${request.sak?.sakstype}"
+        "tema": "${request.tema}"
+        "tittel": "${request.tittel}"
+    }"""
+        .trimIndent()
+}
+
 fun createJournalpostPayload(
     receivedSykmelding: ReceivedSykmelding,
     pdf: ByteArray,
@@ -93,7 +117,31 @@ fun createJournalpostPayload(
     loggingMeta: LoggingMeta,
 ) =
     JournalpostRequest(
-        avsenderMottaker = setAvsenderMottaker(receivedSykmelding, loggingMeta),
+        avsenderMottaker =
+            if (receivedSykmelding.sykmelding.behandler.hpr != null) {
+                createAvsenderMottakerValidHpr(
+                        receivedSykmelding,
+                        receivedSykmelding.sykmelding.behandler.hpr!!.trim(),
+                    )
+                    .also {
+                        log.info(
+                            "Hpr nummer: {}, {}",
+                            receivedSykmelding.sykmelding.behandler.hpr!!.trim(),
+                            fields(loggingMeta),
+                        )
+                    }
+            } else {
+                when (validatePersonAndDNumber(receivedSykmelding.sykmelding.behandler.fnr)) {
+                    true ->
+                        createAvsenderMottakerValidFnr(receivedSykmelding).also {
+                            log.info("Using fnr as avsenderMottaker")
+                        }
+                    else ->
+                        createAvsenderMottakerNotValidFnr(receivedSykmelding).also {
+                            log.info("Using only name as avsenderMottaker")
+                        }
+                }
+            },
         bruker =
             Bruker(
                 id = receivedSykmelding.personNrPasient,
@@ -119,48 +167,12 @@ fun createJournalpostPayload(
         tittel = createTittleJournalpost(validationResult, receivedSykmelding),
     )
 
-fun hprnummerMedRiktigLengdeOgFormat(
-    hprNummerBehandler: String,
-    hprNummerSignerer: String
-): String {
-    val hprnummerKunTallBehandler = hprNummerBehandler.filter { it.isDigit() }
-    val hprnummerKunTallSignerer = hprNummerSignerer.filter { it.isDigit() }
-    if (hprnummerKunTallBehandler.length < 9) {
-        return hprnummerKunTallBehandler.padStart(9, '0')
+fun hprnummerMedRiktigLengdeOgFormat(hprnummer: String): String {
+    val hprnummerKunTall = hprnummer.filter { it.isDigit() }
+    if (hprnummerKunTall.length < 9) {
+        return hprnummerKunTall.padStart(9, '0')
     }
-    if (hprnummerKunTallBehandler.length == 9) return hprNummerBehandler
-    return hprnummerKunTallSignerer
-}
-
-private fun setAvsenderMottaker(
-    receivedSykmelding: ReceivedSykmelding,
-    loggingMeta: LoggingMeta
-): AvsenderMottaker {
-    val hprNummerSignerer = receivedSykmelding.legeHprNr
-    val hprnummerBehandler = receivedSykmelding.sykmelding.behandler.hpr
-    if (hprnummerBehandler != null && hprNummerSignerer != null) {
-        return createAvsenderMottakerValidHpr(
-                receivedSykmelding,
-                hprnummerBehandler,
-                hprNummerSignerer
-            )
-            .also {
-                log.info(
-                    "Hpr numre: {}, {} {}",
-                    kv("HPR nummer behandler", hprnummerBehandler),
-                    kv("HPR nummer signerer", hprNummerSignerer),
-                    fields(loggingMeta),
-                )
-            }
-    }
-    if (validatePersonAndDNumber(receivedSykmelding.sykmelding.behandler.fnr)) {
-        return createAvsenderMottakerValidFnr(receivedSykmelding).also {
-            log.info("Using fnr as avsenderMottaker")
-        }
-    }
-    return createAvsenderMottakerNotValidFnr(receivedSykmelding).also {
-        log.info("Using only name as avsenderMottaker")
-    }
+    return hprnummerKunTall
 }
 
 fun leggtilDokument(
@@ -264,11 +276,10 @@ fun createAvsenderMottakerValidFnr(receivedSykmelding: ReceivedSykmelding): Avse
 
 fun createAvsenderMottakerValidHpr(
     receivedSykmelding: ReceivedSykmelding,
-    hprnummerBehandler: String,
-    hprNummerSignerer: String,
+    hprnummer: String
 ): AvsenderMottaker =
     AvsenderMottaker(
-        id = hprnummerMedRiktigLengdeOgFormat(hprnummerBehandler, hprNummerSignerer),
+        id = hprnummerMedRiktigLengdeOgFormat(hprnummer),
         idType = "HPRNR",
         land = "Norge",
         navn = receivedSykmelding.sykmelding.behandler.formatName(),
@@ -286,7 +297,7 @@ fun createTittleJournalpost(
 ): String {
     return if (validationResult.status == Status.INVALID) {
         "Avvist sykmelding ${getFomTomTekst(receivedSykmelding)}"
-    } else if (receivedSykmelding.ugyldigTilbakedatering()) {
+    } else if  (receivedSykmelding.ugyldigTilbakedatering()) {
         "Avslått sykmelding ${getFomTomTekst(receivedSykmelding)}"
     } else if (receivedSykmelding.delvisGodkjent()) {
         "Delvis godkjent sykmelding ${getFomTomTekst(receivedSykmelding)}"
@@ -300,11 +311,11 @@ fun createTittleJournalpost(
 }
 
 fun ReceivedSykmelding.ugyldigTilbakedatering(): Boolean {
-    return merknader != null && merknader!!.any { it.type == "UGYLDIG_TILBAKEDATERING" }
+    return merknader != null && merknader!!.any {it.type == "UGYLDIG_TILBAKEDATERING"}
 }
 
 fun ReceivedSykmelding.delvisGodkjent(): Boolean {
-    return merknader != null && merknader!!.any { it.type == "DELVIS_GODKJENT" }
+    return merknader != null && merknader!!.any {it.type == "DELVIS_GODKJENT"}
 }
 
 fun ReceivedSykmelding.erUtenlandskSykmelding(): Boolean {
