@@ -68,7 +68,6 @@ class DokArkivClient(
                 httpResponse.status == HttpStatusCode.Created ||
                     httpResponse.status == HttpStatusCode.Conflict
             ) {
-                sikkerlogg.info("Info om journalpostRequest som gitt bra {}", kv("journalpostType", requestBodyJson))
                 httpResponse.call.response.body()
             } else {
                 sikkerlogg.error(
