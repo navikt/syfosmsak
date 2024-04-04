@@ -128,7 +128,7 @@ fun hprnummerMedRiktigLengdeOgFormat(
     if (hprnummerKunTallBehandler.length < 9) {
         return hprnummerKunTallBehandler.padStart(9, '0')
     }
-    if (hprnummerKunTallBehandler.length == 9) return hprnummerKunTallBehandler
+    if (hprnummerKunTallBehandler.length == 9) return hprNummerBehandler
     return hprnummerKunTallSignerer
 }
 
