@@ -58,7 +58,7 @@ internal class DokArkivClientKtTest {
     @Test
     internal fun `Skal bruke signatur hprnummer dersom hprBehandler er lengre enn 9 siffer`() {
         val hprnummmer = hprnummerMedRiktigLengdeOgFormat("11111111111", "02345678")
-        assertEquals("002345678", hprnummmer)
+        assertEquals("02345678", hprnummmer)
     }
 
     @Test
