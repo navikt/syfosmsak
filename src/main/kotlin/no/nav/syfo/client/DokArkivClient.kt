@@ -45,9 +45,8 @@ class DokArkivClient(
     suspend fun createJournalpost(
         journalpostRequest: JournalpostRequest,
         loggingMeta: LoggingMeta,
-    ): JournalpostResponse {
-        val requestBodyJson = journalpostRequestToJson(journalpostRequest)
-        return try {
+    ): JournalpostResponse =
+        try {
             log.info(
                 "Kall til dokarkiv Nav-Callid {}, {}",
                 journalpostRequest.eksternReferanseId,
@@ -71,8 +70,14 @@ class DokArkivClient(
                 httpResponse.call.response.body()
             } else {
                 sikkerlogg.error(
-                    "Info om journalpostRequesten {}",
-                    kv("journalpostType", requestBodyJson)
+                    "Info om journalpostRequesten {} {} {} {} {} {} {}",
+                    kv("journalpostType", journalpostRequest.journalpostType),
+                    kv("sakstype", journalpostRequest.sak?.sakstype),
+                    kv("tema", journalpostRequest.tema),
+                    kv("tittel", journalpostRequest.tittel),
+                    kv("avsenderMottaker id", journalpostRequest.avsenderMottaker?.id),
+                    kv("avsender mottaker navn", journalpostRequest.avsenderMottaker?.navn),
+                    kv("dokumenter size", journalpostRequest.dokumenter.size)
                 )
                 log.error(
                     "Mottok uventet statuskode fra dokarkiv: {}, Nav-Callid {}, {}, ",
@@ -88,24 +93,6 @@ class DokArkivClient(
             log.error("Oppretting av journalpost feilet: ${e.message}, {}", fields(loggingMeta))
             throw e
         }
-    }
-}
-
-fun journalpostRequestToJson(request: JournalpostRequest): String {
-    return """{
-        "avsenderMottaker": "${request.avsenderMottaker}",
-        "behandlingstema": "${request.behandlingstema}",
-        "bruker": "${request.bruker}",
-        "dokumenter": "${request.dokumenter}",
-        "eksternReferanseId": "${request.eksternReferanseId}",
-        "journalfoerendeEnhet": "${request.journalfoerendeEnhet}",
-        "journalpostType": "${request.journalpostType}"
-        "kanal": "${request.kanal}"
-        "sak": "${request.sak}"
-        "tema": "${request.tema}"
-        "tittel": "${request.tittel}"
-    }"""
-        .trimIndent()
 }
 
 fun createJournalpostPayload(
@@ -296,7 +283,7 @@ fun createTittleJournalpost(
 ): String {
     return if (validationResult.status == Status.INVALID) {
         "Avvist sykmelding ${getFomTomTekst(receivedSykmelding)}"
-    } else if  (receivedSykmelding.ugyldigTilbakedatering()) {
+    } else if (receivedSykmelding.ugyldigTilbakedatering()) {
         "Avslått sykmelding ${getFomTomTekst(receivedSykmelding)}"
     } else if (receivedSykmelding.delvisGodkjent()) {
         "Delvis godkjent sykmelding ${getFomTomTekst(receivedSykmelding)}"
@@ -310,11 +297,11 @@ fun createTittleJournalpost(
 }
 
 fun ReceivedSykmelding.ugyldigTilbakedatering(): Boolean {
-    return merknader != null && merknader!!.any {it.type == "UGYLDIG_TILBAKEDATERING"}
+    return merknader != null && merknader!!.any { it.type == "UGYLDIG_TILBAKEDATERING" }
 }
 
 fun ReceivedSykmelding.delvisGodkjent(): Boolean {
-    return merknader != null && merknader!!.any {it.type == "DELVIS_GODKJENT"}
+    return merknader != null && merknader!!.any { it.type == "DELVIS_GODKJENT" }
 }
 
 fun ReceivedSykmelding.erUtenlandskSykmelding(): Boolean {
