@@ -93,15 +93,15 @@ class DokArkivClient(
 
 fun journalpostRequestToJson(request: JournalpostRequest): String {
     return """{
-        "avsenderMottaker": "${request.avsenderMottaker?.id}",
+        "avsenderMottaker": "${request.avsenderMottaker}",
         "behandlingstema": "${request.behandlingstema}",
-        "bruker": "${request.bruker?.id}",
-        "dokumenter": "${request.dokumenter.first().tittel}",
+        "bruker": "${request.bruker}",
+        "dokumenter": "${request.dokumenter}",
         "eksternReferanseId": "${request.eksternReferanseId}",
         "journalfoerendeEnhet": "${request.journalfoerendeEnhet}",
         "journalpostType": "${request.journalpostType}"
         "kanal": "${request.kanal}"
-        "sak": "${request.sak?.sakstype}"
+        "sak": "${request.sak}"
         "tema": "${request.tema}"
         "tittel": "${request.tittel}"
     }"""
@@ -296,7 +296,7 @@ fun createTittleJournalpost(
 ): String {
     return if (validationResult.status == Status.INVALID) {
         "Avvist sykmelding ${getFomTomTekst(receivedSykmelding)}"
-    } else if (receivedSykmelding.ugyldigTilbakedatering()) {
+    } else if  (receivedSykmelding.ugyldigTilbakedatering()) {
         "Avslått sykmelding ${getFomTomTekst(receivedSykmelding)}"
     } else if (receivedSykmelding.delvisGodkjent()) {
         "Delvis godkjent sykmelding ${getFomTomTekst(receivedSykmelding)}"
@@ -310,11 +310,11 @@ fun createTittleJournalpost(
 }
 
 fun ReceivedSykmelding.ugyldigTilbakedatering(): Boolean {
-    return merknader != null && merknader!!.any { it.type == "UGYLDIG_TILBAKEDATERING" }
+    return merknader != null && merknader!!.any {it.type == "UGYLDIG_TILBAKEDATERING"}
 }
 
 fun ReceivedSykmelding.delvisGodkjent(): Boolean {
-    return merknader != null && merknader!!.any { it.type == "DELVIS_GODKJENT" }
+    return merknader != null && merknader!!.any {it.type == "DELVIS_GODKJENT"}
 }
 
 fun ReceivedSykmelding.erUtenlandskSykmelding(): Boolean {
