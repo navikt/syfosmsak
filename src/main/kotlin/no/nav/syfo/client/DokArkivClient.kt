@@ -14,7 +14,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Base64
 import net.logstash.logback.argument.StructuredArguments.fields
-import net.logstash.logback.argument.StructuredArguments.kv
 import no.nav.syfo.log
 import no.nav.syfo.model.AvsenderMottaker
 import no.nav.syfo.model.Behandler
@@ -31,7 +30,6 @@ import no.nav.syfo.model.Status
 import no.nav.syfo.model.ValidationResult
 import no.nav.syfo.model.Vedlegg
 import no.nav.syfo.objectMapper
-import no.nav.syfo.sikkerlogg
 import no.nav.syfo.util.LoggingMeta
 import no.nav.syfo.util.imageToPDF
 import no.nav.syfo.validation.validatePersonAndDNumber
@@ -69,16 +67,6 @@ class DokArkivClient(
             ) {
                 httpResponse.call.response.body()
             } else {
-                sikkerlogg.error(
-                    "Info om journalpostRequesten {} {} {} {} {} {} {}",
-                    kv("journalpostType", journalpostRequest.journalpostType),
-                    kv("sakstype", journalpostRequest.sak?.sakstype),
-                    kv("tema", journalpostRequest.tema),
-                    kv("tittel", journalpostRequest.tittel),
-                    kv("avsenderMottaker id", journalpostRequest.avsenderMottaker?.id),
-                    kv("avsender mottaker navn", journalpostRequest.avsenderMottaker?.navn),
-                    kv("dokumenter size", journalpostRequest.dokumenter.size)
-                )
                 log.error(
                     "Mottok uventet statuskode fra dokarkiv: {}, Nav-Callid {}, {}, ",
                     httpResponse.status,
@@ -283,7 +271,7 @@ fun createTittleJournalpost(
 ): String {
     return if (validationResult.status == Status.INVALID) {
         "Avvist sykmelding ${getFomTomTekst(receivedSykmelding)}"
-    } else if (receivedSykmelding.ugyldigTilbakedatering()) {
+    } else if  (receivedSykmelding.ugyldigTilbakedatering()) {
         "Avslått sykmelding ${getFomTomTekst(receivedSykmelding)}"
     } else if (receivedSykmelding.delvisGodkjent()) {
         "Delvis godkjent sykmelding ${getFomTomTekst(receivedSykmelding)}"
@@ -297,11 +285,11 @@ fun createTittleJournalpost(
 }
 
 fun ReceivedSykmelding.ugyldigTilbakedatering(): Boolean {
-    return merknader != null && merknader!!.any { it.type == "UGYLDIG_TILBAKEDATERING" }
+    return merknader != null && merknader!!.any {it.type == "UGYLDIG_TILBAKEDATERING"}
 }
 
 fun ReceivedSykmelding.delvisGodkjent(): Boolean {
-    return merknader != null && merknader!!.any { it.type == "DELVIS_GODKJENT" }
+    return merknader != null && merknader!!.any {it.type == "DELVIS_GODKJENT"}
 }
 
 fun ReceivedSykmelding.erUtenlandskSykmelding(): Boolean {
