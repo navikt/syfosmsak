@@ -15,7 +15,7 @@ val kotlinVersion = "1.9.23"
 val pdfboxVersion = "2.0.31"
 val googleCloudStorageVersion = "2.37.0"
 val ktfmtVersion = "0.44"
-val commonsCodecVersion = "1.16.1"
+val commonsCodecVersion = "1.17.0"
 val snappyJavaVersion = "1.1.10.5"
 
 plugins {
