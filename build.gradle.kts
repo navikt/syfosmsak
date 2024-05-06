@@ -2,7 +2,7 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.8.0"
-val jacksonVersion = "2.17.0"
+val jacksonVersion = "2.17.1"
 val kafkaVersion = "3.7.0"
 val ktorVersion = "2.3.10"
 val logstashLogbackEncoder = "7.4"
@@ -15,7 +15,7 @@ val kotlinVersion = "1.9.23"
 val pdfboxVersion = "2.0.31"
 val googleCloudStorageVersion = "2.37.0"
 val ktfmtVersion = "0.44"
-val commonsCodecVersion = "1.16.1"
+val commonsCodecVersion = "1.17.0"
 val snappyJavaVersion = "1.1.10.5"
 
 plugins {
