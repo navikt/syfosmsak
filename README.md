@@ -11,9 +11,13 @@ persist
 * Junit
 * Kafka
 
-#### Requirements
-
-* JDK 17
+### :scroll: Prerequisites
+* JDK 21
+  Make sure you have the Java JDK 21 installed
+  You can check which version you have installed using this command:
+``` shell
+java -version
+```
 
 ## Getting started
 ### Building the application
