@@ -17,6 +17,7 @@ val googleCloudStorageVersion = "2.40.1"
 val ktfmtVersion = "0.44"
 val commonsCodecVersion = "1.17.0"
 val snappyJavaVersion = "1.1.10.5"
+val diagnosekoderVersion = "1.2024.0"
 
 plugins {
     id("application")
@@ -74,11 +75,11 @@ dependencies {
     }
     implementation("no.nav.helse:syfosm-common-models:$smCommonVersion")
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-diagnosis-codes:$smCommonVersion")
 
     implementation("org.apache.pdfbox:pdfbox:$pdfboxVersion")
     implementation("com.google.cloud:google-cloud-storage:$googleCloudStorageVersion")
 
+    testImplementation("no.nav.helse:diagnosekoder:$diagnosekoderVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
