@@ -1,5 +1,6 @@
 package no.nav.syfo
 
+import no.nav.helse.diagnosekoder.Diagnosekoder
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -25,9 +26,8 @@ import no.nav.syfo.model.Periode
 import no.nav.syfo.model.Prognose
 import no.nav.syfo.model.SporsmalSvar
 import no.nav.syfo.model.Sykmelding
-import no.nav.syfo.sm.Diagnosekoder
 
-fun Diagnosekoder.DiagnosekodeType.toDiagnose() = Diagnose(system = oid, kode = code, tekst = text)
+fun Diagnosekoder.ICPC2.toDiagnose() = Diagnose(system = oid, kode = code, tekst = text)
 
 fun generateSykmelding(
     id: String = UUID.randomUUID().toString(),
@@ -132,7 +132,7 @@ fun generateAktivitetIkkeMulig(
 fun generateMedisinskArsak(
     beskrivelse: String = "test data",
     arsak: List<MedisinskArsakType> =
-        listOf(MedisinskArsakType.values()[Random.nextInt(MedisinskArsakType.values().size)]),
+        listOf(MedisinskArsakType.entries[Random.nextInt(MedisinskArsakType.entries.size)]),
 ) =
     MedisinskArsak(
         beskrivelse = beskrivelse,
