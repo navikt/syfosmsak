@@ -1,10 +1,10 @@
 package no.nav.syfo
 
-import no.nav.helse.diagnosekoder.Diagnosekoder
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.random.Random
+import no.nav.helse.diagnosekoder.Diagnosekoder
 import no.nav.syfo.model.Adresse
 import no.nav.syfo.model.AktivitetIkkeMulig
 import no.nav.syfo.model.AnnenFraversArsak
