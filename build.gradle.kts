@@ -10,7 +10,7 @@ val logbackVersion = "1.5.7"
 val prometheusVersion = "0.16.0"
 val junitJupiterVersion = "5.11.0"
 val ioMockVersion = "1.13.12"
-val kotlinVersion = "2.0.10"
+val kotlinVersion = "2.0.20"
 val pdfboxVersion = "2.0.32"
 val googleCloudStorageVersion = "2.42.0"
 val ktfmtVersion = "0.44"
@@ -20,14 +20,13 @@ val diagnosekoderVersion = "1.2024.0"
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.0.10"
+    kotlin("jvm") version "2.0.20"
     id("com.diffplug.spotless") version "6.25.0"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.0"
 }
 
 application {
     mainClass.set("no.nav.syfo.BootstrapKt")
-
 }
 
 
