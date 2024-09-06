@@ -48,7 +48,6 @@ spec:
     application:
       enabled: true
       tenant: nav.no
-    enabled: false
   filesFrom:
     - secret: sykmeldingvedlegg-google-creds
   kafka:

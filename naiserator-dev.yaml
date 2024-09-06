@@ -49,7 +49,6 @@ spec:
     application:
       enabled: true
       tenant: trygdeetaten.no
-    enabled: false
   filesFrom:
     - secret: sykmeldingvedlegg-google-creds
   kafka:
