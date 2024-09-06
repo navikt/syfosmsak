@@ -40,10 +40,10 @@ spec:
         - id: elastic
   resources:
     limits:
-      memory: 3700Mi
+      memory: 2Gi
     requests:
-      cpu: 200m
-      memory: 2400Mi
+      cpu: 150m
+      memory: 1024Mi
   azure:
     application:
       enabled: true
