@@ -55,7 +55,6 @@ spec:
     - secret: sykmeldingvedlegg-google-creds
   kafka:
     pool: nav-dev
-  webproxy: false
   secureLogs:
     enabled: true
   accessPolicy:
