@@ -15,7 +15,7 @@ val pdfboxVersion = "2.0.32"
 val googleCloudStorageVersion = "2.42.0"
 val ktfmtVersion = "0.44"
 val commonsCodecVersion = "1.17.1"
-val snappyJavaVersion = "1.1.10.6"
+val snappyJavaVersion = "1.1.10.7"
 val diagnosekoderVersion = "1.2024.0"
 
 plugins {
