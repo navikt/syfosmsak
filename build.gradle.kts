@@ -6,23 +6,23 @@ val jacksonVersion = "2.18.0"
 val kafkaVersion = "3.8.0"
 val ktorVersion = "3.0.0"
 val logstashLogbackEncoder = "8.0"
-val logbackVersion = "1.5.8"
+val logbackVersion = "1.5.11"
 val prometheusVersion = "0.16.0"
-val junitJupiterVersion = "5.11.1"
-val ioMockVersion = "1.13.12"
-val kotlinVersion = "2.0.20"
+val junitJupiterVersion = "5.11.3"
+val ioMockVersion = "1.13.13"
+val kotlinVersion = "2.0.21"
 val pdfboxVersion = "2.0.32"
-val googleCloudStorageVersion = "2.43.1"
+val googleCloudStorageVersion = "2.44.0"
 val ktfmtVersion = "0.44"
 val commonsCodecVersion = "1.17.1"
 val snappyJavaVersion = "1.1.10.7"
-val diagnosekoderVersion = "1.2024.0"
+val diagnosekoderVersion = "1.2024.1"
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.0.20"
+    kotlin("jvm") version "2.0.21"
     id("com.diffplug.spotless") version "6.25.0"
-    id("com.gradleup.shadow") version "8.3.2"
+    id("com.gradleup.shadow") version "8.3.3"
 }
 
 application {
