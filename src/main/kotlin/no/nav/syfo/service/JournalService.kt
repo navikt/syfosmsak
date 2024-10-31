@@ -1,5 +1,6 @@
 package no.nav.syfo.service
 
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.DokArkivClient
 import no.nav.syfo.client.PdfgenClient
@@ -27,6 +28,8 @@ class JournalService(
     private val pdlPersonService: PdlPersonService,
     private val bucketService: BucketService,
 ) {
+
+    @WithSpan
     suspend fun onJournalRequest(
         receivedSykmelding: ReceivedSykmelding,
         validationResult: ValidationResult,

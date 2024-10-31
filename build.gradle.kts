@@ -17,6 +17,7 @@ val ktfmtVersion = "0.44"
 val commonsCodecVersion = "1.17.1"
 val snappyJavaVersion = "1.1.10.7"
 val diagnosekoderVersion = "1.2024.0"
+val opentelemetryVersion = "2.3.0"
 
 plugins {
     id("application")
@@ -59,6 +60,7 @@ dependencies {
     }
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:$opentelemetryVersion")
 
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 
