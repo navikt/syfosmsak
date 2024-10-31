@@ -260,6 +260,7 @@ suspend fun blockingApplicationLogic(
                             fields(loggingMeta)
                         )
                     } else {
+                        log.error("Error during processing recieved sykmelding {} {}", fields(loggingMeta), ex.message)
                         throw ex
                     }
                 }
