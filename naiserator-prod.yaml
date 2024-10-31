@@ -9,10 +9,10 @@ spec:
   image: {{ image }}
   replicas:
     min: 2
-    max: 6
+    max: 8
     scalingStrategy:
       kafka:
-        consumerGroup: prod-gcp
+        consumerGroup: syfosmsak-consumer
         threshold: 300
         topic: teamsykmelding.privat-sykmelding-sak
   port: 8080

@@ -12,7 +12,7 @@ spec:
     max: 2
     scalingStrategy:
       kafka:
-        consumerGroup: dev-gcp
+        consumerGroup: syfosmsak-consumer
         threshold: 300
         topic: teamsykmelding.privat-sykmelding-sak
   port: 8080
