@@ -9,7 +9,7 @@ spec:
   image: {{ image }}
   replicas:
     min: 2
-    max: 8
+    max: 10
     scalingStrategy:
       kafka:
         consumerGroup: syfosmsak-consumer
