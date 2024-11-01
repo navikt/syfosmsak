@@ -20,7 +20,6 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
-import io.opentelemetry.instrumentation.annotations.WithSpan
 import io.prometheus.client.hotspot.DefaultExports
 import java.io.FileInputStream
 import java.time.Duration
@@ -229,50 +228,41 @@ suspend fun blockingApplicationLogic(
     env: Environment,
 ) {
     while (applicationState.ready) {
-        processMessages(consumer, journalService, env)
-    }
-}
-
-@WithSpan
-private suspend fun processMessages(consumer: KafkaConsumer<String, String>, journalService: JournalService, env: Environment) {
-    consumer.poll(Duration.ofSeconds(1)).forEach {
-        log.info(
-            "Offset for topic: privat-sykmelding-sak, offset: ${it.offset()}, partisjon: ${it.partition()}"
-        )
-        val behandlingsUtfallReceivedSykmelding: BehandlingsUtfallReceivedSykmelding =
-            objectMapper.readValue(it.value())
-        val receivedSykmelding: ReceivedSykmelding =
-            objectMapper.readValue(behandlingsUtfallReceivedSykmelding.receivedSykmelding)
-        val validationResult: ValidationResult =
-            objectMapper.readValue(behandlingsUtfallReceivedSykmelding.behandlingsUtfall)
-
-        val loggingMeta =
-            LoggingMeta(
-                mottakId = receivedSykmelding.navLogId,
-                orgNr = receivedSykmelding.legekontorOrgNr,
-                msgId = receivedSykmelding.msgId,
-                sykmeldingId = receivedSykmelding.sykmelding.id,
+        consumer.poll(Duration.ofSeconds(1)).forEach {
+            log.info(
+                "Offset for topic: privat-sykmelding-sak, offset: ${it.offset()}, partisjon: ${it.partition()}"
             )
-        withTimeout(Duration.ofSeconds(30)) {
-            try {
-                journalService.onJournalRequest(
-                    receivedSykmelding,
-                    validationResult,
-                    loggingMeta
+            val behandlingsUtfallReceivedSykmelding: BehandlingsUtfallReceivedSykmelding =
+                objectMapper.readValue(it.value())
+            val receivedSykmelding: ReceivedSykmelding =
+                objectMapper.readValue(behandlingsUtfallReceivedSykmelding.receivedSykmelding)
+            val validationResult: ValidationResult =
+                objectMapper.readValue(behandlingsUtfallReceivedSykmelding.behandlingsUtfall)
+
+            val loggingMeta =
+                LoggingMeta(
+                    mottakId = receivedSykmelding.navLogId,
+                    orgNr = receivedSykmelding.legekontorOrgNr,
+                    msgId = receivedSykmelding.msgId,
+                    sykmeldingId = receivedSykmelding.sykmelding.id,
                 )
-            } catch (ex: Exception) {
-                if (env.cluster == "dev-gcp") {
-                    log.error(
-                        "Could not process record {} skipping in dev",
-                        fields(loggingMeta)
+            withTimeout(Duration.ofSeconds(30)) {
+                try {
+                    journalService.onJournalRequest(
+                        receivedSykmelding,
+                        validationResult,
+                        loggingMeta
                     )
-                } else {
-                    log.error(
-                        "Error during processing recieved sykmelding {} {}",
-                        fields(loggingMeta),
-                        ex.message
-                    )
-                    throw ex
+                } catch (ex: Exception) {
+                    if (env.cluster == "dev-gcp") {
+                        log.error(
+                            "Could not process record {} skipping in dev",
+                            fields(loggingMeta)
+                        )
+                    } else {
+                        log.error("Error during processing recieved sykmelding {} {}", fields(loggingMeta), ex.message)
+                        throw ex
+                    }
                 }
             }
         }
