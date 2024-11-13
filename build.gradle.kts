@@ -3,7 +3,7 @@ version = "1.0.0"
 
 val coroutinesVersion = "1.9.0"
 val jacksonVersion = "2.18.1"
-val kafkaVersion = "3.8.1"
+val kafkaVersion = "3.9.0"
 val ktorVersion = "3.0.1"
 val logstashLogbackEncoder = "8.0"
 val logbackVersion = "1.5.12"
@@ -17,7 +17,7 @@ val ktfmtVersion = "0.44"
 val commonsCodecVersion = "1.17.1"
 val snappyJavaVersion = "1.1.10.7"
 val diagnosekoderVersion = "1.2024.1"
-val opentelemetryVersion = "2.9.0"
+val opentelemetryVersion = "2.10.0"
 
 plugins {
     id("application")
