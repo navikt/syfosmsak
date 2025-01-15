@@ -9,10 +9,10 @@ val logstashLogbackEncoder = "8.0"
 val logbackVersion = "1.5.16"
 val prometheusVersion = "0.16.0"
 val junitJupiterVersion = "5.11.4"
-val ioMockVersion = "1.13.14"
+val ioMockVersion = "1.13.16"
 val kotlinVersion = "2.1.0"
 val pdfboxVersion = "2.0.32"
-val googleCloudStorageVersion = "2.46.0"
+val googleCloudStorageVersion = "2.47.0"
 val ktfmtVersion = "0.44"
 val commonsCodecVersion = "1.17.2"
 val snappyJavaVersion = "1.1.10.7"
@@ -22,7 +22,7 @@ val opentelemetryVersion = "2.11.0"
 plugins {
     id("application")
     kotlin("jvm") version "2.1.0"
-    id("com.diffplug.spotless") version "7.0.1"
+    id("com.diffplug.spotless") version "7.0.2"
     id("com.gradleup.shadow") version "8.3.5"
 }
 
