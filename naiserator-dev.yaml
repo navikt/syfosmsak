@@ -48,8 +48,6 @@ spec:
     application:
       enabled: true
       tenant: trygdeetaten.no
-  filesFrom:
-    - secret: sykmeldingvedlegg-google-creds
   kafka:
     pool: nav-dev
   secureLogs:
@@ -63,6 +61,8 @@ spec:
       external:
         - host: pdl-api.dev-fss-pub.nais.io
         - host: dokarkiv.dev-fss-pub.nais.io
+  envFrom:
+    - secret: syfosmmottak-secret
   env:
     - name: DOK_ARKIV_URL
       value: https://dokarkiv.dev-fss-pub.nais.io/rest/journalpostapi/v1/journalpost
@@ -72,5 +72,3 @@ spec:
       value: https://pdl-api.dev-fss-pub.nais.io/graphql
     - name: PDL_SCOPE
       value: api://dev-fss.pdl.pdl-api/.default
-    - name: SYKMELDING_VEDLEGG_BUCKET_NAME
-      value: teamsykmelding-sykmelding-vedlegg-bucket-dev
