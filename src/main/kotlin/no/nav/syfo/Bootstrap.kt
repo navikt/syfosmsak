@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import com.google.auth.Credentials
-import com.google.auth.oauth2.GoogleCredentials
 import com.google.cloud.storage.Storage
 import com.google.cloud.storage.StorageOptions
 import io.ktor.client.HttpClient
@@ -21,7 +19,6 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.network.sockets.SocketTimeoutException
 import io.ktor.serialization.jackson.jackson
 import io.prometheus.client.hotspot.DefaultExports
-import java.io.FileInputStream
 import java.time.Duration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -140,15 +137,7 @@ fun main() {
     val pdlPersonService =
         PdlFactory.getPdlService(env, httpClient, accessTokenClientV2, env.pdlScope)
 
-    val sykmeldingVedleggStorageCredentials: Credentials =
-        GoogleCredentials.fromStream(
-            FileInputStream("/var/run/secrets/sykmeldingvedlegg-google-creds.json")
-        )
-    val sykmeldingVedleggStorage: Storage =
-        StorageOptions.newBuilder()
-            .setCredentials(sykmeldingVedleggStorageCredentials)
-            .build()
-            .service
+    val sykmeldingVedleggStorage: Storage = StorageOptions.newBuilder().build().service
     val bucketService = BucketService(env.sykmeldingVedleggBucketName, sykmeldingVedleggStorage)
 
     val aivenProducer =
