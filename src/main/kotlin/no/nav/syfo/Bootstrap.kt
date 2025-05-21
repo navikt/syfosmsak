@@ -237,11 +237,11 @@ suspend fun blockingApplicationLogic(
                 )
             withTimeout(Duration.ofSeconds(30)) {
                 try {
-                    journalService.onJournalRequest(
+                    /*journalService.onJournalRequest(
                         receivedSykmelding,
                         validationResult,
                         loggingMeta
-                    )
+                    )*/
                 } catch (ex: Exception) {
                     if (env.cluster == "dev-gcp") {
                         log.error(
